@@ -20,7 +20,7 @@ const checkoutPatch = `
     if (!card) return;
 
     card.innerHTML =
-      '<button class="close" onclick="closeModal(\\'' + id + '\\')" aria-label="Close">×</button>' +
+      '<button class="close" id="close-' + id + '" aria-label="Close">×</button>' +
       '<h2>' + title + '</h2>' +
       '<p>' + copy + '</p>' +
       '<div class="result" style="display:block;margin:16px 0">' +
@@ -30,6 +30,7 @@ const checkoutPatch = `
       '<button class="action" id="checkout-' + id + '">Continue to Secure Checkout →</button>' +
       '<div class="notice">One-time payment. Automated guidance identifies potential issues and is not legal advice or legal certification.</div>';
 
+    document.getElementById('close-' + id).onclick = () => closeModal(id);
     document.getElementById('checkout-' + id).onclick = () => checkout(checkoutUrl);
   }
 
