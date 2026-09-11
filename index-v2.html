@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#102A3A">
+<meta name="description" content="BrandedAlign helps creators, entrepreneurs, and business owners spot potential brand, disclosure, accessibility, privacy, and marketing risks before publishing.">
+<meta name="copyright" content="© 2026 TeamUpWithKrystal">
+<meta name="author" content="TeamUpWithKrystal">
+<title>BrandedAlign | Protect Your Brand Before You Publish</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23102A3A'/%3E%3Cpath d='M32 10l4.8 17.2L54 32l-17.2 4.8L32 54l-4.8-17.2L10 32l17.2-4.8L32 10z' fill='%23E8B84C'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%23FFFDF7'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="/styles-v2.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand" href="#top" aria-label="BrandedAlign home">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><path d="M32 5l5.4 21.6L59 32l-21.6 5.4L32 59l-5.4-21.6L5 32l21.6-5.4L32 5z" fill="#E8B84C"/><circle cx="32" cy="32" r="7" fill="#FFFDF7"/></svg></span>
+      <span class="brand-copy"><strong>BrandedAlign</strong><span>brand review · clarity · confidence</span></span>
+    </a>
+    <nav class="nav-links" aria-label="Main navigation"><a href="#how">How it works</a><a href="#fit">Fit Check</a><a href="#plans">Plans</a><a href="#deep-dives">Deep Dives</a><a href="#faq">FAQ</a></nav>
+    <div class="nav-actions">
+      <div id="sessionPill" class="session-pill"><span id="sessionEmail"></span><button type="button" id="signOutBtn">Sign out</button></div>
+      <button class="btn btn-ghost btn-small" type="button" id="loginBtn">Log in</button>
+      <a class="btn btn-primary btn-small" href="#plans">Get started</a>
+    </div>
+  </div>
+</header>
+<main id="top">
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <span class="eyebrow">Clarity before you publish</span>
+        <h1>Protect your brand <span>before it goes live.</span></h1>
+        <p>BrandedAlign helps you spot potential disclosure, accessibility, privacy, marketing, and brand-alignment risks across the places your business shows up.</p>
+        <div class="hero-actions"><a class="btn btn-primary" href="#fit">Run the free Fit Check →</a><a class="btn btn-ghost" href="#plans">See membership plans</a></div>
+        <div class="hero-note"><span><i class="dot-check">✓</i> Built for multi-offer brands</span><span><i class="dot-check">✓</i> Plain-language guidance</span><span><i class="dot-check">✓</i> Human judgment stays yours</span></div>
+      </div>
+
+      <div class="hero-art" aria-hidden="true">
+        <div class="light-ray ray1"></div>
+        <div class="light-ray ray2"></div>
+        <div class="orb-stage">
+          <canvas id="brandOrb3d" aria-label="BrandedAlign dimensional alignment compass"></canvas>
+          <div class="orb-fallback"><div class="fallback-core">✦</div></div>
+        </div>
+        <div class="orb-labels"><span>Clearer</span><span>Safer</span><span>Stronger</span><span>Brighter</span></div>
+        <div class="purpose-note">Same<br>purpose.<br>A stronger<br>tomorrow.</div>
+        <div class="soft-flower"></div>
+      </div>
+    </div>
+  </section>
+  <div class="trust-band"><div class="container trust-row"><div class="trust-item"><span class="trust-icon">01</span><span><strong>One brand</strong><br>See the whole ecosystem.</span></div><div class="trust-item"><span class="trust-icon">02</span><span><strong>Multiple offers</strong><br>Review how they sit together.</span></div><div class="trust-item"><span class="trust-icon">03</span><span><strong>Clearer review</strong><br>Prioritize what needs attention.</span></div><div class="trust-item"><span class="trust-icon">04</span><span><strong>Safer language</strong><br>No fake legal certification.</span></div></div></div>
+
+  <section class="section" id="how">
+    <div class="container">
+      <div class="section-head"><div><span class="eyebrow">How it works</span><h2>From scattered brand pieces to one clear review.</h2></div><p class="lede">BrandedAlign is built for the messy real world where one person may have a website, affiliate offers, social content, lead magnets, and multiple income streams under the same name.</p></div>
+      <div class="how-grid">
+        <article class="step"><span class="step-num">01</span><div class="step-icon">◎</div><h3>Start with your brand</h3><p>Add the site or offer you want to review first. You stay in control of what gets analyzed.</p></article>
+        <article class="step"><span class="step-num">02</span><div class="step-icon">⌘</div><h3>Connect the pieces</h3><p>Look at how offers, disclosures, claims, links, and pages work together across one ecosystem.</p></article>
+        <article class="step"><span class="step-num">03</span><div class="step-icon">◇</div><h3>Review potential risks</h3><p>See signals worth checking, with plain-language context and safer next-step guidance.</p></article>
+        <article class="step"><span class="step-num">04</span><div class="step-icon">✦</div><h3>Publish with clarity</h3><p>Use the report to clean up confusing areas and decide where professional review makes sense.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="fit">
+    <div class="container fit-wrap">
+      <div class="fit-copy"><span class="eyebrow">Free 60 Second Fit Check</span><h2>Give one public page a fast first look.</h2><p>This lightweight scan looks for potential accessibility, privacy, technical, and disclosure concerns. It is a starting point, not a certification.</p><div class="fit-points"><div><i class="dot-check">✓</i><span>No payment required.</span></div><div><i class="dot-check">✓</i><span>Public pages only.</span></div><div><i class="dot-check">✓</i><span>Designed to help you decide what to review next.</span></div></div></div>
+      <div class="fit-card"><span class="eyebrow">Try it now</span><h3 style="font-size:34px;margin:9px 0 20px">Run a Fit Check</h3><form id="fitForm"><div class="field"><label for="fitUrl">Website URL</label><input id="fitUrl" type="url" required placeholder="https://yourbusiness.com" autocomplete="url"></div><button class="btn btn-gold" style="margin-top:14px" id="fitBtn" type="submit">Check this page →</button></form><div id="fitResult" class="result-box" aria-live="polite"></div><p style="font-size:11px;color:#7c8b91;margin-top:14px">Automated educational guidance only. A low-risk result is not a safe harbor and a flagged item is not a legal conclusion.</p></div>
+    </div>
+  </section>
+
+  <section class="section pricing" id="plans">
+    <div class="container">
+      <div class="section-head"><div><span class="eyebrow">Memberships</span><h2>Choose the review capacity that fits your brand.</h2></div><p class="lede">Secure checkout is hosted by Stripe. Paid access unlocks only after BrandedAlign receives and verifies the Stripe webhook.</p></div>
+      <div class="plan-grid">
+        <article class="plan"><div class="plan-name">Steward</div><div class="plan-price">$39 <span>/ month</span></div><p class="plan-desc">Focused ongoing review for a growing brand.</p><ul><li>10 scans per billing cycle</li><li>Up to 3 websites</li><li>Up to 100 pages per scan</li><li>Core findings history</li></ul><button class="btn btn-ghost btn-block plan-btn" data-plan="steward" type="button">Choose Steward →</button></article>
+        <article class="plan featured"><span class="plan-badge">Recommended</span><div class="plan-name">Harvest</div><div class="plan-price">$89 <span>/ month</span></div><p class="plan-desc">Best for multi-offer brands that need deeper, recurring review.</p><ul><li>30 scans per billing cycle</li><li>Up to 10 websites</li><li>Up to 500 pages per scan</li><li>Deeper ecosystem review</li></ul><button class="btn btn-gold btn-block plan-btn" data-plan="harvest" type="button">Choose Harvest →</button></article>
+        <article class="plan"><div class="plan-name">Abundance</div><div class="plan-price">$249 <span>/ month</span></div><p class="plan-desc">Higher-capacity review for active teams and larger ecosystems.</p><ul><li>100 scans per billing cycle</li><li>Up to 40 websites</li><li>Up to 1,000 pages per scan</li><li>Highest concurrent capacity</li></ul><button class="btn btn-ghost btn-block plan-btn" data-plan="abundance" type="button">Choose Abundance →</button></article>
+      </div>
+      <div class="plan-foot">Cancel through the secure billing portal. BrandedAlign does not store your card number.</div>
+    </div>
+  </section>
+
+  <section class="section" id="deep-dives">
+    <div class="container">
+      <div class="section-head"><div><span class="eyebrow">Deep Dives</span><h2>Current guidance, translated into safer next steps.</h2></div><p class="lede">Deep Dives are sourced from primary or official guidance where possible. Each item shows its review date and risk level. Publication remains human-reviewed.</p></div>
+      <div id="deepGrid" class="deep-grid"><div class="deep-empty">Loading reviewed guidance…</div></div>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="container"><div class="section-head"><div><span class="eyebrow">FAQ</span><h2>What BrandedAlign is. And what it is not.</h2></div></div><div class="faq-list">
+      <article class="faq"><button type="button">Does BrandedAlign certify that my business is compliant?<span>＋</span></button><div class="faq-answer">No. BrandedAlign provides automated educational information, risk spotting, and organizational guidance. It does not provide legal certification, legal opinions, or a guarantee of compliance.</div></article>
+      <article class="faq"><button type="button">Why would a multi-offer brand use this?<span>＋</span></button><div class="faq-answer">Because risk often appears in the relationship between pieces: a disclosure on one page, an earnings statement on another, wellness language in a post, or multiple offers presented under one personal brand. BrandedAlign is designed to help you review those connections.</div></article>
+      <article class="faq"><button type="button">Are the Deep Dives automatically published?<span>＋</span></button><div class="faq-answer">No. Source monitoring can help surface changes, but legal-adjacent guidance should be reviewed before publication. BrandedAlign deliberately uses cautious labels such as “review recommended” and “professional review advised.”</div></article>
+      <article class="faq"><button type="button">Who owns BrandedAlign?<span>＋</span></button><div class="faq-answer">BrandedAlign is owned and operated by TeamUpWithKrystal.</div></article>
+    </div></div>
+  </section>
+</main>
+<footer class="footer"><div class="container"><div class="footer-grid"><div><a class="brand" href="#top"><span class="brand-mark"><svg viewBox="0 0 64 64" fill="none"><path d="M32 5l5.4 21.6L59 32l-21.6 5.4L32 59l-5.4-21.6L5 32l21.6-5.4L32 5z" fill="#E8B84C"/><circle cx="32" cy="32" r="7" fill="#FFFDF7"/></svg></span><span class="brand-copy"><strong>BrandedAlign</strong><span>by TeamUpWithKrystal</span></span></a><p style="max-width:480px;margin-top:14px">Brand review and risk-spotting tools for creators, entrepreneurs, and business owners building more than one thing under one name.</p></div><div><h4>Explore</h4><div class="footer-links"><a href="#how">How it works</a><a href="#fit">Fit Check</a><a href="#plans">Plans</a><a href="#deep-dives">Deep Dives</a></div></div><div><h4>Legal & account</h4><div class="footer-links"><button type="button" id="legalBtn">Disclaimer & use</button><button type="button" id="footerLoginBtn">Log in</button><button type="button" id="billingBtn">Manage billing</button></div></div></div><div class="legal-line"><span>© 2026 TeamUpWithKrystal. All rights reserved.</span><span>BrandedAlign provides educational guidance, not legal advice or legal certification.</span></div></div></footer>
+
+<!-- Auth modal -->
+<div class="modal" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle"><div class="modal-card"><button class="modal-close" type="button" data-close="authModal">×</button><span class="eyebrow">Secure account</span><h2 id="authTitle">Welcome to BrandedAlign.</h2><p id="authCopy">Sign in or create your account. If you selected a plan, we will continue to Stripe Checkout after authentication.</p><div class="auth-tabs"><button type="button" id="authSignInTab" class="active">Sign in</button><button type="button" id="authSignUpTab">Create account</button></div><form id="authForm" class="form-grid"><div class="field"><label for="authEmail">Email</label><input id="authEmail" type="email" autocomplete="email" required></div><div class="field"><label for="authPassword">Password</label><input id="authPassword" type="password" autocomplete="current-password" minlength="8" required></div><button id="authSubmit" class="btn btn-primary" type="submit">Sign in →</button></form><button id="authResend" class="btn btn-ghost btn-small hidden" type="button" style="margin-top:10px">Resend confirmation email</button><div id="authStatus" class="modal-status" aria-live="polite"></div></div></div>
+
+<!-- Deep dive modal -->
+<div class="modal" id="diveModal" role="dialog" aria-modal="true" aria-labelledby="diveTitle"><div class="modal-card"><button class="modal-close" type="button" data-close="diveModal">×</button><div id="diveContent"></div></div></div>
+
+<!-- Legal modal -->
+<div class="modal" id="legalModal" role="dialog" aria-modal="true" aria-labelledby="legalTitle"><div class="modal-card legal-copy"><button class="modal-close" type="button" data-close="legalModal">×</button><span class="eyebrow">Disclaimer & use</span><h2 id="legalTitle">Guidance, not a legal verdict.</h2><p>BrandedAlign provides automated educational information, risk spotting, and organizational guidance. It is not a law firm and does not provide legal advice, legal opinions, legal certification, or a guarantee of compliance.</p><p>Results are not a determination that content, conduct, or a business practice is lawful or unlawful. Laws, regulations, platform rules, and standards change and can vary by jurisdiction and circumstance. You remain responsible for your decisions and what you publish.</p><p>For high-risk, regulated, jurisdiction-specific, or uncertain issues, consult a qualified attorney or other appropriate professional. Use of BrandedAlign does not create an attorney-client relationship.</p><h3>Automated analysis</h3><p>BrandedAlign can miss issues, surface false positives, or interpret context differently than a regulator, court, platform, professional, or human reviewer. A low-risk result is not a safe harbor. A flagged item is a prompt for review, not an accusation or legal conclusion.</p><h3>Changing rules and sources</h3><p>Deep Dives summarize selected official guidance and other sources for educational use. Source material can change after a Deep Dive is reviewed. For decisions with legal, financial, health, privacy, accessibility, intellectual-property, employment, or other regulated consequences, verify the current primary source and obtain qualified advice where appropriate.</p><h3>Ownership & copyright</h3><p>© 2026 TeamUpWithKrystal. All rights reserved. BrandedAlign is owned and operated by TeamUpWithKrystal. Unless otherwise identified, original BrandedAlign text, interface content, graphics, organization, and educational materials are provided for personal or internal business use and may not be republished, resold, scraped, copied in bulk, or represented as another party’s work without permission. Third-party names, marks, quotations, links, and source materials remain the property of their respective owners.</p></div></div>
+
+<script src="/app-v2.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.min.js"></script>
+<script src="/orb-v2.js"></script>
+</body>
+</html>
