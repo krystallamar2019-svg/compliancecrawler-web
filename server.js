@@ -60,3 +60,5 @@ server.listen(port, '0.0.0.0', () => {
   console.log(`BrandedAlign v2 customer site active on ${port}`);
   console.log('Compass: restored dimensional WebGL | Auth redirect: production-aware | Billing: Stripe webhook gated');
 });
+
+// production deploy trigger: restored luxury orb
