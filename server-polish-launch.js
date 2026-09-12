@@ -52,7 +52,16 @@ function baStudyArea(d){
 }
 openDive=function(d){
   const sections=baDeepDiveSections(d.body);
-  document.getElementById('diveContent').innerHTML=`<span class="eyebrow">${esc(d.category||'Deep Dive')}</span><h2 id="diveTitle">${esc(d.title||'Deep Dive')}</h2><p><strong>${esc(riskLabel(d.risk_level))}</strong>${d.reviewed_at?' · Reviewed '+esc(fmtDate(d.reviewed_at)):''}</p>${sections}<div class="takeaway" style="margin-top:20px">Safer takeaway: ${esc(d.safe_takeaway||'Review the source and use qualified advice when the stakes are high.')}</div>${baStudyArea(d)}<p style="font-size:12px;margin-top:16px">This Deep Dive is educational guidance, not legal advice or a guarantee of compliance.</p>`;
+  const reviewed=d.reviewed_at?' · Reviewed '+esc(fmtDate(d.reviewed_at)):'';
+  const takeaway=esc(d.safe_takeaway||'Review the source and use qualified advice when the stakes are high.');
+  const html='<span class="eyebrow">'+esc(d.category||'Deep Dive')+'</span>'+
+    '<h2 id="diveTitle">'+esc(d.title||'Deep Dive')+'</h2>'+
+    '<p><strong>'+esc(riskLabel(d.risk_level))+'</strong>'+reviewed+'</p>'+
+    sections+
+    '<div class="takeaway" style="margin-top:20px">Safer takeaway: '+takeaway+'</div>'+
+    baStudyArea(d)+
+    '<p style="font-size:12px;margin-top:16px">This Deep Dive is educational guidance, not legal advice or a guarantee of compliance.</p>';
+  document.getElementById('diveContent').innerHTML=html;
   openModal('diveModal');
 };
 `;
