@@ -9,6 +9,7 @@ import { requireAuth } from './middleware/auth.js';
 import { errorHandler, notFound } from './middleware/error.js';
 import { adminRouter } from './routes/admin.js';
 import { billingRouter } from './routes/billing.js';
+import { fitCheckRouter } from './routes/fitCheck.js';
 import { meRouter } from './routes/me.js';
 import { reportsRouter } from './routes/reports.js';
 import { scansRouter } from './routes/scans.js';
@@ -74,6 +75,17 @@ export function createApp() {
   }));
 
   app.use(express.json({ limit: '256kb', type: 'application/json' }));
+
+  const fitCheckLimiter = rateLimit({
+    windowMs: 15 * 60_000,
+    limit: 10,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    message: { error: 'FIT_CHECK_RATE_LIMITED' },
+  });
+
+  // Public by design, but deliberately narrow: one page, SSRF guarded, no account data.
+  app.use('/api/fit-check', fitCheckLimiter, fitCheckRouter);
 
   const apiLimiter = rateLimit({
     windowMs: 60_000,
