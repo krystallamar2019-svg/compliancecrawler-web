@@ -59,4 +59,9 @@ body .site-header:after{content:'';position:absolute;pointer-events:none;z-index
   body .site-header:before{right:-46px;top:42%;width:72px;height:66px;background-size:116px auto;opacity:.68}
 }
 
-/* deploy trigger: centered mobile hero glow */
+/* hard mobile cleanup: remove stray top-left aqua orb from page background and hero overlay */
+@media(max-width:640px){
+  body{background:linear-gradient(180deg,#fffdfa 0%,#fbf7ef 58%,#f7fbf8 100%)!important}
+  .hero .hero-grid>div:first-child:before{display:none!important}
+  body .hero:before{background:linear-gradient(130deg,rgba(255,255,255,.34),transparent 48%),radial-gradient(circle at 76% 34%,rgba(236,210,168,.18),transparent 34%)!important}
+}
