@@ -22,14 +22,19 @@ export function getStripe(): Stripe {
   return client;
 }
 
-const envPriceByPlan: Partial<Record<PaidPlanKey, string>> = {
-  steward: config.STRIPE_STEWARD_PRICE_ID,
-  harvest: config.STRIPE_HARVEST_PRICE_ID,
-  abundance: config.STRIPE_ABUNDANCE_PRICE_ID,
-};
+function configuredPrice(planKey: PaidPlanKey): string | undefined {
+  switch (planKey) {
+    case 'steward':
+      return config.STRIPE_STEWARD_PRICE_ID;
+    case 'harvest':
+      return config.STRIPE_HARVEST_PRICE_ID;
+    case 'abundance':
+      return config.STRIPE_ABUNDANCE_PRICE_ID;
+  }
+}
 
 export async function resolveTestPrice(planKey: PaidPlanKey): Promise<string> {
-  const envPrice = envPriceByPlan[planKey];
+  const envPrice = configuredPrice(planKey);
   if (envPrice) return envPrice;
 
   const { data, error } = await supabaseAdmin
