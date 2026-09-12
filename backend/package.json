@@ -21,6 +21,7 @@
     "express-rate-limit": "8.7.0",
     "helmet": "8.3.0",
     "ioredis": "6.0.0",
+    "ipaddr.js": "2.5.0",
     "jose": "6.2.12",
     "pino": "10.3.1",
     "playwright": "1.63.0",
