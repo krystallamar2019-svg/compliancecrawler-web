@@ -58,8 +58,7 @@ fs.readFileSync=function(file,options){
   let next=text;
   if(base==='index-v2.html'){
     next=next.replace('<div id="sessionPill"',`<div id="memberPlanPill" class="member-plan-pill hidden"><span id="memberPlanLabel">Membership</span></div><button class="btn btn-ghost btn-small nav-billing-btn hidden" type="button" id="navBillingBtn">Manage billing</button><div id="sessionPill"`);
-    next=next.replace('<main id="top">','<main id="top">'+successBanner);
-    next=next.replace('<section class="section pricing" id="plans">',accountSection+'<section class="section pricing" id="plans">');
+    next=next.replace('<main id="top">','<main id="top">'+successBanner+accountSection);
   }else if(base==='styles-v2.css'){
     next+='\n'+accountCss;
   }else if(base==='app-v2.js'){
