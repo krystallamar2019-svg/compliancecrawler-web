@@ -5,9 +5,9 @@ const controls=originalRead(path.join(__dirname,'client-membership-controls.js')
 
 fs.readFileSync=function(file,options){
   const out=originalRead(file,options);
-  if(path.basename(String(file))!=='client-v1.html')return out;
+  if(path.basename(String(file))!=='client-v1.js')return out;
   const text=Buffer.isBuffer(out)?out.toString('utf8'):String(out);
-  const injected=text.replace('</body>',`<script>${controls}</script></body>`);
+  const injected=text+'\n'+controls+'\n';
   const encoding=typeof options==='string'?options:options&&options.encoding;
   return encoding?injected:Buffer.from(injected);
 };
