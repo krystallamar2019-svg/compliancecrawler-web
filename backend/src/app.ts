@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import { config } from './config.js';
 import { requireAuth } from './middleware/auth.js';
 import { errorHandler, notFound } from './middleware/error.js';
+import { adminRouter } from './routes/admin.js';
 import { billingRouter } from './routes/billing.js';
 import { meRouter } from './routes/me.js';
 import { reportsRouter } from './routes/reports.js';
@@ -78,6 +79,7 @@ export function createApp() {
   app.use('/api/reports', reportsRouter);
   app.use('/api/sites', sitesRouter);
   app.use('/api/usage', usageRouter);
+  app.use('/api/admin', adminRouter);
 
   app.use(notFound);
   app.use(errorHandler);
