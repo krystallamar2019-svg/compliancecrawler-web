@@ -157,7 +157,10 @@ export async function crawlPublicSite(startUrl: string, pageLimit: number): Prom
   let browser: Browser | undefined;
 
   try {
-    browser = await chromium.launch({ headless: true });
+    const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH?.trim();
+    browser = await chromium.launch(executablePath
+      ? { headless: true, executablePath }
+      : { headless: true });
     const context = await browser.newContext({
       acceptDownloads: false,
       serviceWorkers: 'block',
