@@ -3,6 +3,7 @@ import { analyzePage, type FindingDraft } from '../analysis/rules.js';
 import { crawlPublicSite } from '../crawler/crawl.js';
 import { supabaseAdmin } from '../lib/supabase.js';
 import { generateReportScores } from '../reports/generateReport.js';
+import { enqueueCapHubEvent } from '../queue/caphubQueue.js';
 import type { ScanQueuePayload } from '../queue/scanQueue.js';
 
 function safeWorkerError(error: unknown) {
@@ -52,6 +53,14 @@ export async function processScan(job: Job<ScanQueuePayload>) {
     failed_at: null,
     safe_error_code: null,
   });
+
+  void enqueueCapHubEvent({
+    eventId: `scan-${scanId}-started`,
+    eventType: 'scan.started',
+    supabase_org_id: organizationId,
+    scanId,
+    scanStatus: 'Running',
+  }).catch(() => undefined);
 
   // A retry starts from a clean server-generated result set, so partial rows from
   // a previous worker attempt cannot create duplicates or contradictory reports.
@@ -121,7 +130,7 @@ export async function processScan(job: Job<ScanQueuePayload>) {
     await setStatus(scanId, organizationId, 'Generating report');
     const scores = generateReportScores(allFindings);
 
-    const { error: reportError } = await supabaseAdmin.from('reports').insert({
+    const { data: report, error: reportError } = await supabaseAdmin.from('reports').insert({
       organization_id: organizationId,
       scan_job_id: scanId,
       overall_score: scores.overallScore,
@@ -132,7 +141,7 @@ export async function processScan(job: Job<ScanQueuePayload>) {
       technical_score: scores.technicalScore,
       alignment_score: scores.alignmentScore,
       summary: scores.summary,
-    });
+    }).select('id').single();
     if (reportError) throw reportError;
 
     const now = new Date().toISOString();
@@ -154,6 +163,18 @@ export async function processScan(job: Job<ScanQueuePayload>) {
         updated_at: now,
       }).eq('id', scan.site_id).eq('org_id', organizationId);
     }
+
+    const critical = allFindings.filter((finding) => finding.severity === 'Critical').length;
+    const high = allFindings.filter((finding) => finding.severity === 'High').length;
+    void enqueueCapHubEvent({
+      eventId: `scan-${scanId}-completed`,
+      eventType: 'scan.completed',
+      supabase_org_id: organizationId,
+      scanId,
+      scanStatus: 'Completed',
+      scoreSummary: { overall: scores.overallScore, high, critical },
+      reportReadyPath: `/reports/${report.id}`,
+    }).catch(() => undefined);
 
     return {
       scanId,
