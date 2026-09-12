@@ -17,6 +17,7 @@ const activityKeys = [
   'recruit_same_prospect',
   'compare_products',
 ] as const;
+type ActivityKey = (typeof activityKeys)[number];
 
 const relationshipTypes = ['affiliate', 'direct_sales', 'network_marketing', 'referral', 'sponsor', 'other'] as const;
 const customerSources = ['independently_owned', 'company_provided', 'mixed_or_unsure', 'not_applicable'] as const;
@@ -56,7 +57,7 @@ const topicPatterns: Record<string, RegExp[]> = {
   disclosure: [/disclos/i, /endorsement/i, /affiliate relationship/i],
 };
 
-const activityTopics: Record<(typeof activityKeys)[number], string[]> = {
+const activityTopics: Record<ActivityKey, string[]> = {
   same_brand: ['trademark', 'marketing', 'exclusivity'],
   same_site: ['marketing', 'trademark', 'exclusivity'],
   same_social: ['marketing', 'trademark', 'exclusivity', 'disclosure'],
@@ -69,7 +70,7 @@ const activityTopics: Record<(typeof activityKeys)[number], string[]> = {
   compare_products: ['comparative', 'trademark', 'claims'],
 };
 
-const activityLabels: Record<(typeof activityKeys)[number], string> = {
+const activityLabels: Record<ActivityKey, string> = {
   same_brand: 'Place multiple offers under one personal or business brand',
   same_site: 'Promote multiple companies on the same website',
   same_social: 'Promote multiple companies from the same social accounts',
@@ -104,7 +105,7 @@ function topicMatches(clause: string, topics: string[]): string[] {
   return topics.filter((topic) => (topicPatterns[topic] ?? []).some((pattern) => pattern.test(clause)));
 }
 
-function saferStructure(activity: (typeof activityKeys)[number], customerSource: string): string {
+function saferStructure(activity: ActivityKey, customerSource: string): string {
   if (activity === 'cross_sell_company_customers' || activity === 'recruit_existing_downline') {
     return 'Keep company-provided customer, distributor, genealogy, and team records separate. Do not cross-solicit them unless the current agreement clearly permits it or qualified counsel confirms the activity.';
   }
@@ -125,15 +126,11 @@ function saferStructure(activity: (typeof activityKeys)[number], customerSource:
   return 'Keep the companies, claims, disclosures, customer sources, and recruiting paths clearly separated until the current agreements support combining them.';
 }
 
-function analyzePartyActivity(
-  text: string | null,
-  activity: (typeof activityKeys)[number],
-  customerSource: string,
-) {
+function analyzePartyActivity(text: string | null, activity: ActivityKey, customerSource: string) {
   if (!text?.trim()) {
     return {
       risk_level: 'cannot_determine' as const,
-      clause_topic: activityTopics[activity][0],
+      clause_topic: activityTopics[activity][0] ?? 'agreement_scope',
       clause_reference: null,
       evidence_excerpt: null,
       explanation: `Current agreement text is required before BrandedAlign can evaluate: ${activityLabels[activity]}.`,
@@ -150,7 +147,7 @@ function analyzePartyActivity(
   if (!matched.length) {
     return {
       risk_level: 'cannot_determine' as const,
-      clause_topic: relevantTopics[0],
+      clause_topic: relevantTopics[0] ?? 'agreement_scope',
       clause_reference: null,
       evidence_excerpt: null,
       explanation: `No clause was confidently identified for ${activityLabels[activity].toLowerCase()}. Absence of a detected clause is not treated as permission.`,
@@ -163,7 +160,7 @@ function analyzePartyActivity(
   if (prohibited) {
     return {
       risk_level: 'red' as const,
-      clause_topic: prohibited.topics[0],
+      clause_topic: prohibited.topics[0] ?? 'agreement_scope',
       clause_reference: null,
       evidence_excerpt: prohibited.clause.slice(0, 650),
       explanation: `Potential prohibition or restriction detected for ${activityLabels[activity].toLowerCase()}. Professional review is advised before proceeding.`,
@@ -176,7 +173,7 @@ function analyzePartyActivity(
   if (conditional) {
     return {
       risk_level: 'yellow' as const,
-      clause_topic: conditional.topics[0],
+      clause_topic: conditional.topics[0] ?? 'agreement_scope',
       clause_reference: null,
       evidence_excerpt: conditional.clause.slice(0, 650),
       explanation: `Conditional or approval-based language was detected for ${activityLabels[activity].toLowerCase()}. Review the full section before relying on it.`,
@@ -189,7 +186,7 @@ function analyzePartyActivity(
   if (permitted) {
     return {
       risk_level: 'green' as const,
-      clause_topic: permitted.topics[0],
+      clause_topic: permitted.topics[0] ?? 'agreement_scope',
       clause_reference: null,
       evidence_excerpt: permitted.clause.slice(0, 650),
       explanation: `Potentially permissive language was identified for ${activityLabels[activity].toLowerCase()}. This means no conflict was found in the detected clause, not that BrandedAlign is certifying legal compliance.`,
@@ -198,10 +195,10 @@ function analyzePartyActivity(
     };
   }
 
-  const first = matched[0];
+  const first = matched[0]!;
   return {
     risk_level: 'yellow' as const,
-    clause_topic: first.topics[0],
+    clause_topic: first.topics[0] ?? 'agreement_scope',
     clause_reference: null,
     evidence_excerpt: first.clause.slice(0, 650),
     explanation: `Relevant agreement language was found for ${activityLabels[activity].toLowerCase()}, but it is not clear enough for a safe yes/no conclusion.`,
@@ -249,8 +246,10 @@ async function analyzeReview(reviewId: string, organizationId: string) {
     .eq('review_id', reviewId)
     .eq('organization_id', organizationId);
 
-  const activities = (Array.isArray(review.intended_activities) ? review.intended_activities : [])
-    .filter((value): value is (typeof activityKeys)[number] => activityKeys.includes(value));
+  const rawActivities: unknown[] = Array.isArray(review.intended_activities) ? review.intended_activities : [];
+  const activities = rawActivities.filter((value: unknown): value is ActivityKey =>
+    typeof value === 'string' && activityKeys.includes(value as ActivityKey),
+  );
 
   const findings = [];
   for (const party of parties ?? []) {
