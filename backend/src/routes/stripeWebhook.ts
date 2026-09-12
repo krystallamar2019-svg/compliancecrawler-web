@@ -43,18 +43,6 @@ async function organizationForSubscription(subscription: Stripe.Subscription): P
   return row.org_id;
 }
 
-async function planForPrice(priceId: string | null): Promise<string> {
-  if (!priceId) return 'free';
-  const { data, error } = await supabaseAdmin
-    .from('subscription_plans')
-    .select('plan_key')
-    .eq('stripe_test_price_id', priceId)
-    .eq('is_active', true)
-    .maybeSingle();
-  if (error) throw error;
-  return data?.plan_key ?? 'free';
-}
-
 async function syncSubscription(subscription: Stripe.Subscription) {
   if (subscription.livemode) throw new Error('LIVE_EVENT_REJECTED_IN_TEST_BACKEND');
 
@@ -62,21 +50,22 @@ async function syncSubscription(subscription: Stripe.Subscription) {
   const customerId = customerIdOf(subscription.customer);
   const firstItem = subscription.items.data[0];
   const priceId = firstItem?.price?.id ?? null;
-  const planKey = await planForPrice(priceId);
   const period = subscriptionPeriod(subscription);
 
-  const { error: entitlementError } = await supabaseAdmin.rpc('apply_stripe_subscription', {
+  const { data: planKey, error: entitlementError } = await supabaseAdmin.rpc('apply_stripe_subscription_v2', {
     p_org_id: organizationId,
     p_customer_id: customerId,
     p_subscription_id: subscription.id,
     p_price_id: priceId,
     p_status: subscription.status,
+    p_current_period_start: period.start,
     p_current_period_end: period.end,
     p_cancel_at_period_end: subscription.cancel_at_period_end,
     p_livemode: false,
   });
   if (entitlementError) throw entitlementError;
 
+  const resolvedPlanKey = typeof planKey === 'string' ? planKey : 'free';
   const { error: mirrorError } = await supabaseAdmin
     .from('subscriptions')
     .upsert({
@@ -84,7 +73,7 @@ async function syncSubscription(subscription: Stripe.Subscription) {
       stripe_customer_id: customerId,
       stripe_subscription_id: subscription.id,
       stripe_price_id: priceId,
-      plan_key: planKey,
+      plan_key: resolvedPlanKey,
       status: subscription.status,
       current_period_start: period.start,
       current_period_end: period.end,
@@ -97,7 +86,7 @@ async function syncSubscription(subscription: Stripe.Subscription) {
   void enqueueCapHubEvent({
     eventType: 'subscription.updated',
     supabase_org_id: organizationId,
-    planName: planKey,
+    planName: resolvedPlanKey,
     subscriptionStatus: subscription.status,
     renewalDate: period.end,
   }).catch(() => {
