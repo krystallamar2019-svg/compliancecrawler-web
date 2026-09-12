@@ -1,7 +1,7 @@
 import { Worker } from 'bullmq';
 import { deliverCapHubEvent } from '../integrations/caphub.js';
 import { logger } from '../lib/logger.js';
-import type { CapHubEventPayload } from '../queue/caphubQueue.js';
+import { enqueueCapHubEvent, type CapHubEventPayload } from '../queue/caphubQueue.js';
 import { getRedisConnection, type ScanQueuePayload } from '../queue/scanQueue.js';
 import { supabaseAdmin } from '../lib/supabase.js';
 import { processScan } from './processor.js';
@@ -39,12 +39,23 @@ scanWorker.on('failed', async (job, error) => {
 
   if (exhausted) {
     const now = new Date().toISOString();
-    await supabaseAdmin
-      .from('usage_ledger')
-      .update({ status: 'failed', units_consumed: 0, updated_at: now })
-      .eq('scan_job_id', job.data.scanId)
-      .eq('organization_id', job.data.organizationId)
-      .catch(() => undefined);
+    try {
+      await supabaseAdmin
+        .from('usage_ledger')
+        .update({ status: 'failed', units_consumed: 0, updated_at: now })
+        .eq('scan_job_id', job.data.scanId)
+        .eq('organization_id', job.data.organizationId);
+    } catch {
+      logger.error({ scanId: job.data.scanId }, 'Could not reconcile failed scan usage');
+    }
+
+    void enqueueCapHubEvent({
+      eventId: `scan-${job.data.scanId}-failed`,
+      eventType: 'scan.failed',
+      supabase_org_id: job.data.organizationId,
+      scanId: job.data.scanId,
+      scanStatus: 'Failed',
+    }).catch(() => undefined);
   }
 
   // Never log raw crawler errors here; they can contain target-controlled text.
