@@ -1,9 +1,10 @@
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import { resolveTxt } from 'node:dns/promises';
 import { Router } from 'express';
 import { z } from 'zod';
-import { assertSafeDestination } from '../security/urlSafety.js';
+import { hashVerificationToken, pageContainsVerificationMeta, verificationTokenMatches } from '../security/domainVerification.js';
 import { safeFetchText } from '../security/safeFetch.js';
+import { assertSafeDestination } from '../security/urlSafety.js';
 import { supabaseAdmin } from '../lib/supabase.js';
 import type { AuthenticatedRequest } from '../types/auth.js';
 
@@ -21,20 +22,6 @@ const startVerificationSchema = z.object({
 const checkVerificationSchema = z.object({
   token: z.string().min(20).max(512),
 });
-
-function tokenHash(token: string) {
-  return createHash('sha256').update(token, 'utf8').digest();
-}
-
-function tokenHashHex(token: string) {
-  return tokenHash(token).toString('hex');
-}
-
-function equalHash(rawToken: string, storedHex: string) {
-  const actual = tokenHash(rawToken);
-  const expected = Buffer.from(storedHex, 'hex');
-  return actual.length === expected.length && timingSafeEqual(actual, expected);
-}
 
 async function getOwnedSite(siteId: string, organizationId: string) {
   const { data, error } = await supabaseAdmin
@@ -147,7 +134,7 @@ sitesRouter.post('/:id/verify', async (req, res, next) => {
       organization_id: organizationId,
       site_id: site.id,
       method: parsed.data.method,
-      token_hash: tokenHashHex(token),
+      token_hash: hashVerificationToken(token),
       status: 'pending',
       expires_at: expiresAt,
     });
@@ -210,7 +197,7 @@ sitesRouter.post('/:id/verify/check', async (req, res, next) => {
       .limit(1)
       .maybeSingle();
     if (verificationError) throw verificationError;
-    if (!verification || !equalHash(parsed.data.token, verification.token_hash)) {
+    if (!verification || !verificationTokenMatches(parsed.data.token, verification.token_hash)) {
       res.status(400).json({ error: 'VERIFICATION_TOKEN_INVALID' });
       return;
     }
@@ -239,12 +226,7 @@ sitesRouter.post('/:id/verify/check', async (req, res, next) => {
       verified = response.status >= 200 && response.status < 300 && response.body.trim().includes(expected);
     } else if (verification.method === 'meta_tag') {
       const response = await safeFetchText(site.url);
-      const tags = response.body.match(/<meta\b[^>]*>/gi) ?? [];
-      verified = tags.some((tag) => {
-        const name = tag.match(/\bname\s*=\s*["']([^"']+)["']/i)?.[1]?.toLowerCase();
-        const content = tag.match(/\bcontent\s*=\s*["']([^"']+)["']/i)?.[1];
-        return name === 'brandedalign-verification' && content === token;
-      });
+      verified = pageContainsVerificationMeta(response.body, token);
     }
 
     const checkedAt = new Date().toISOString();
