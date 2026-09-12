@@ -8,8 +8,11 @@ import { requireAuth } from './middleware/auth.js';
 import { errorHandler, notFound } from './middleware/error.js';
 import { billingRouter } from './routes/billing.js';
 import { meRouter } from './routes/me.js';
+import { reportsRouter } from './routes/reports.js';
 import { scansRouter } from './routes/scans.js';
+import { sitesRouter } from './routes/sites.js';
 import { stripeWebhookHandler } from './routes/stripeWebhook.js';
+import { usageRouter } from './routes/usage.js';
 
 export function createApp() {
   const app = express();
@@ -72,6 +75,9 @@ export function createApp() {
   app.use('/api/me', meRouter);
   app.use('/api', billingRouter);
   app.use('/api/scans', scansRouter);
+  app.use('/api/reports', reportsRouter);
+  app.use('/api/sites', sitesRouter);
+  app.use('/api/usage', usageRouter);
 
   app.use(notFound);
   app.use(errorHandler);
