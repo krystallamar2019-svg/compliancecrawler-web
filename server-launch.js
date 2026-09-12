@@ -8,7 +8,7 @@ const commonHeaders={
   'Referrer-Policy':'strict-origin-when-cross-origin',
   'X-Frame-Options':'SAMEORIGIN',
   'Permissions-Policy':'camera=(), microphone=(), geolocation=()',
-  'Content-Security-Policy':"default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://pbprkgkvsxkpdhsmjzrc.supabase.co https://compliance-api-production-dd13.up.railway.app; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; frame-ancestors 'self'; base-uri 'self'; form-action 'self' https://checkout.stripe.com"
+  'Content-Security-Policy':"default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://pbprkgkvsxkpdhsmjzrc.supabase.co https://compliance-web-production-cf94.up.railway.app; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; frame-ancestors 'self'; base-uri 'self'; form-action 'self' https://checkout.stripe.com"
 };
 const launchStyles=`<style id="launch-luxury-static-hero">
 body{background:radial-gradient(circle at 7% 8%,rgba(171,235,232,.28),transparent 28%),radial-gradient(circle at 94% 12%,rgba(236,197,129,.30),transparent 27%),radial-gradient(circle at 82% 63%,rgba(224,176,165,.17),transparent 24%),linear-gradient(180deg,#fffdfa 0%,#fbf4e8 52%,#f5faf6 100%)!important}
