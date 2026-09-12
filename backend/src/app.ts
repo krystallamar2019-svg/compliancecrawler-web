@@ -100,6 +100,7 @@ export function createApp() {
   app.use('/api', requireAuth);
 
   app.use('/api/me', meRouter);
+  // Billing router includes checkout, billing portal, prorated upgrades, and period-end cancellation.
   app.use('/api', billingRouter);
   app.use('/api/agreement-reviews', agreementReviewsRouter);
   app.use('/api/scans', scansRouter);
