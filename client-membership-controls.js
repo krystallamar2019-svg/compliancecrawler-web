@@ -56,7 +56,7 @@
     const btn=document.getElementById('membershipUpgradeBtn');const target=btn?.dataset.target;if(!btn||!target)return;
     if(!confirm('Upgrade to '+label[target]+' now? Stripe will apply mid-cycle proration and keep your current renewal date.'))return;
     btn.disabled=true;status('Applying your upgrade…');
-    try{const result=await api('/api/upgrade-membership',{method:'POST',body:'{}'});if(result.paymentUrl){location.assign(result.paymentUrl);return}status('Upgrade successful. Refreshing…');setTimeout(()=>location.reload(),1000)}catch(err){status(err.message||'Upgrade could not be completed.',true);btn.disabled=false}
+    try{const result=await api('/api/me/upgrade',{method:'POST',body:'{}'});if(result.paymentUrl){location.assign(result.paymentUrl);return}status('Upgrade successful. Refreshing…');setTimeout(()=>location.reload(),1000)}catch(err){status(err.message||'Upgrade could not be completed.',true);btn.disabled=false}
   }
   async function cancel(){
     const btn=document.getElementById('membershipCancelBtn');if(!btn||btn.disabled)return;
@@ -64,7 +64,7 @@
     const end=fmt(me?.currentPeriodEnd);
     if(!confirm('Cancel membership renewal? Your access will stay active through '+end+'.'))return;
     btn.disabled=true;status('Scheduling cancellation…');
-    try{await api('/api/cancel-membership',{method:'POST',body:'{}'});btn.textContent='Cancellation scheduled';document.getElementById('membershipUpgradeBtn').hidden=true;status('Membership stays active through '+end+'.')}catch(err){status(err.message||'Cancellation could not be scheduled.',true);btn.disabled=false}
+    try{await api('/api/me/cancel',{method:'POST',body:'{}'});btn.textContent='Cancellation scheduled';document.getElementById('membershipUpgradeBtn').hidden=true;status('Membership stays active through '+end+'.')}catch(err){status(err.message||'Cancellation could not be scheduled.',true);btn.disabled=false}
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh);else refresh();
   window.addEventListener('pageshow',()=>setTimeout(refresh,150));
