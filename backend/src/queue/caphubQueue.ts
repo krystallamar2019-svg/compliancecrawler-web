@@ -1,5 +1,7 @@
 import { Queue } from 'bullmq';
 import { randomUUID } from 'node:crypto';
+import { config } from '../config.js';
+import { deliverCapHubEvent } from '../integrations/caphub.js';
 import { getRedisConnection } from './scanQueue.js';
 
 export type CapHubEventType =
@@ -46,5 +48,11 @@ export async function enqueueCapHubEvent(input: Omit<CapHubEventPayload, 'eventI
     eventId: input.eventId ?? randomUUID(),
     occurredAt: input.occurredAt ?? new Date().toISOString(),
   };
+
+  if (!config.REDIS_URL) {
+    await deliverCapHubEvent(payload);
+    return { id: payload.eventId, mode: 'direct' as const };
+  }
+
   return getQueue().add(input.eventType, payload, { jobId: payload.eventId });
 }
