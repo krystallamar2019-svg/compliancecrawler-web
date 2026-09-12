@@ -64,7 +64,7 @@ export async function processScan(job: Job<ScanQueuePayload>) {
 
   // A retry starts from a clean server-generated result set, so partial rows from
   // a previous worker attempt cannot create duplicates or contradictory reports.
-  await supabaseAdmin.from('findings').delete().eq('scan_job_id', scanId).eq('organization_id', organizationId);
+  await supabaseAdmin.from('findings').delete().eq('scan_job_id', scanId).eq('org_id', organizationId);
   await supabaseAdmin.from('reports').delete().eq('scan_job_id', scanId).eq('organization_id', organizationId);
   await supabaseAdmin.from('scan_pages').delete().eq('scan_job_id', scanId).eq('organization_id', organizationId);
 
@@ -97,7 +97,7 @@ export async function processScan(job: Job<ScanQueuePayload>) {
       if (findings.length > 0) {
         const { error: findingError } = await supabaseAdmin.from('findings').insert(
           findings.map((finding) => ({
-            organization_id: organizationId,
+            org_id: organizationId,
             scan_job_id: scanId,
             scan_page_id: pageRow.id,
             category: finding.category,
