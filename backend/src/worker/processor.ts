@@ -1,6 +1,6 @@
 import type { Job } from 'bullmq';
 import { analyzePage, type FindingDraft } from '../analysis/rules.js';
-import { crawlPublicSite } from '../crawler/crawl.js';
+import { crawlPublicSite } from '../crawler/index.js';
 import { supabaseAdmin } from '../lib/supabase.js';
 import { generateReportScores } from '../reports/generateReport.js';
 import { enqueueCapHubEvent } from '../queue/caphubQueue.js';
@@ -67,8 +67,6 @@ export async function processScanPayload(payload: ScanQueuePayload) {
     scanStatus: 'Running',
   }).catch(() => undefined);
 
-  // A retry starts from a clean server-generated result set, so partial rows from
-  // a previous worker attempt cannot create duplicates or contradictory reports.
   await supabaseAdmin.from('findings').delete().eq('scan_job_id', scanId).eq('org_id', organizationId);
   await supabaseAdmin.from('reports').delete().eq('scan_job_id', scanId).eq('organization_id', organizationId);
   await supabaseAdmin.from('scan_pages').delete().eq('scan_job_id', scanId).eq('organization_id', organizationId);
