@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#102A3A">
+<meta name="robots" content="noindex,nofollow">
+<meta name="copyright" content="© 2026 TeamUpWithKrystal">
+<meta name="author" content="TeamUpWithKrystal">
+<title>Client Portal | BrandedAlign</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23102A3A'/%3E%3Cpath d='M32 10l4.8 17.2L54 32l-17.2 4.8L32 54l-4.8-17.2L10 32l17.2-4.8L32 10z' fill='%23E8B84C'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%23FFFDF7'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="/styles-v2.css">
+<link rel="stylesheet" href="/client-v1.css">
+</head>
+<body class="client-body">
+<header class="client-header">
+  <div class="container client-nav">
+    <a class="brand" href="/" aria-label="BrandedAlign home">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><path d="M32 5l5.4 21.6L59 32l-21.6 5.4L32 59l-5.4-21.6L5 32l21.6-5.4L32 5z" fill="#E8B84C"/><circle cx="32" cy="32" r="7" fill="#FFFDF7"/></svg></span>
+      <span class="brand-copy"><strong>BrandedAlign</strong><span>Client Portal</span></span>
+    </a>
+    <nav class="client-links" aria-label="Client portal navigation">
+      <a href="#agreement">Agreement Check</a>
+      <a href="#savedReviews">Saved Reviews</a>
+      <a href="/#deep-dives">Deep Dives</a>
+      <a href="/">Public Site</a>
+    </nav>
+    <div class="client-nav-actions">
+      <span class="client-plan-pill" id="clientPlanPill">Loading…</span>
+      <button class="btn btn-ghost btn-small" id="clientBillingBtn" type="button">Manage billing</button>
+      <button class="client-signout" id="clientSignOutBtn" type="button">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<main class="client-main">
+  <section class="client-welcome">
+    <div class="container client-welcome-grid">
+      <div>
+        <span class="eyebrow">Your BrandedAlign workspace</span>
+        <h1>Build one brand without accidentally breaking three agreements.</h1>
+        <p>Review how your offers, affiliate relationships, customers, audiences, and team-building plans can coexist before you market them together.</p>
+        <div class="client-welcome-meta"><span id="clientEmail">Signed in</span><span>•</span><span>Educational contract-risk spotting, not legal advice.</span></div>
+      </div>
+      <div class="client-membership-card" aria-label="Membership summary">
+        <span class="eyebrow">Your membership</span>
+        <div class="client-membership-grid">
+          <div><span>Plan</span><strong id="clientPlan">—</strong></div>
+          <div><span>Status</span><strong id="clientStatus">—</strong></div>
+          <div><span>Next billing date</span><strong id="clientRenewal">—</strong></div>
+          <div><span>Scans per cycle</span><strong id="clientScans">—</strong></div>
+        </div>
+        <div id="clientMembershipNote" class="client-membership-note"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="agreement-workspace" id="agreement" aria-labelledby="agreementTitle">
+    <div class="container">
+      <div class="agreement-shell">
+        <div class="agreement-intro">
+          <div>
+            <span class="eyebrow">Core BrandedAlign workspace</span>
+            <h2 id="agreementTitle">Can these offers live under one brand?</h2>
+            <p>Compare affiliate, direct sales, referral, and network marketing agreements against what you actually want to do: promote together, market to the same audience, cross-sell, or build multiple teams.</p>
+          </div>
+          <div class="agreement-legend" aria-label="Compatibility key">
+            <span class="risk-chip green">Green · no conflict found</span>
+            <span class="risk-chip yellow">Yellow · review needed</span>
+            <span class="risk-chip red">Red · potential restriction</span>
+            <span class="risk-chip unknown">Cannot determine</span>
+          </div>
+        </div>
+
+        <form id="agreementForm" class="agreement-form">
+          <div class="agreement-grid two">
+            <label class="agreement-field"><span>Brand or ecosystem name</span><input id="agreementBrandName" maxlength="200" placeholder="Example: The Compass" required></label>
+            <label class="agreement-field"><span>Where did this audience/customer relationship come from?</span><select id="agreementCustomerSource"><option value="independently_owned">I built/own the audience independently</option><option value="company_provided">The company provided the customers/contacts</option><option value="mixed_or_unsure" selected>Mixed or I am not sure</option><option value="not_applicable">Not applicable</option></select></label>
+          </div>
+
+          <div class="agreement-step">
+            <div class="agreement-step-head"><div><span class="step-number">01</span><strong>Add the companies</strong><small>Use the current agreement, Policies & Procedures, distributor terms, or affiliate terms when available.</small></div><button type="button" class="btn btn-ghost btn-small" id="addAgreementCompany">+ Add company</button></div>
+            <div id="agreementCompanies" class="agreement-companies"></div>
+          </div>
+
+          <div class="agreement-step">
+            <div class="agreement-step-head"><div><span class="step-number">02</span><strong>What do you want to do across these companies?</strong><small>BrandedAlign checks the agreements against the actual activity instead of giving a vague overall score.</small></div></div>
+            <div class="agreement-activities">
+              <label><input type="checkbox" name="agreementActivity" value="same_brand"><span><strong>One personal brand</strong><small>Place multiple offers under one umbrella brand.</small></span></label>
+              <label><input type="checkbox" name="agreementActivity" value="same_site"><span><strong>Same website</strong><small>List or promote the companies on the same site.</small></span></label>
+              <label><input type="checkbox" name="agreementActivity" value="same_social"><span><strong>Same social accounts</strong><small>Talk about all of them from the same social profiles.</small></span></label>
+              <label><input type="checkbox" name="agreementActivity" value="same_email_list"><span><strong>Same email audience</strong><small>Email the same list about multiple companies.</small></span></label>
+              <label><input type="checkbox" name="agreementActivity" value="cross_sell_owned_audience"><span><strong>Cross-sell my own audience</strong><small>Promote another offer to contacts you independently collected.</small></span></label>
+              <label><input type="checkbox" name="agreementActivity" value="cross_sell_company_customers"><span><strong>Cross-sell company customers</strong><small>Promote another offer to customers obtained through Company A.</small></span></label>
+              <label><input type="checkbox" name="agreementActivity" value="build_multiple_teams"><span><strong>Build teams in multiple companies</strong><small>Actively recruit and grow organizations in more than one company.</small></span></label>
+              <label><input type="checkbox" name="agreementActivity" value="recruit_existing_downline"><span><strong>Recruit an existing downline elsewhere</strong><small>Introduce current team members to another opportunity.</small></span></label>
+              <label><input type="checkbox" name="agreementActivity" value="recruit_same_prospect"><span><strong>Present multiple opportunities to one prospect</strong><small>Offer more than one business opportunity to the same person.</small></span></label>
+              <label><input type="checkbox" name="agreementActivity" value="compare_products"><span><strong>Compare products</strong><small>Compare claims, benefits, brands, or competing products.</small></span></label>
+            </div>
+          </div>
+
+          <div class="agreement-grid one">
+            <label class="agreement-field"><span>Anything else BrandedAlign should know?</span><textarea id="agreementNotes" rows="3" maxlength="5000" placeholder="Example: I want separate landing pages but one Nurture section under my larger brand."></textarea></label>
+          </div>
+          <div id="agreementStatus" class="agreement-status" aria-live="polite"></div>
+          <button class="btn btn-primary agreement-submit" id="agreementSubmit" type="submit">Run Agreement Compatibility Review →</button>
+          <p class="agreement-disclaimer">BrandedAlign spots potential contract and policy conflicts for further review. It does not provide legal advice, legal opinions, or a guarantee that an activity is permitted.</p>
+        </form>
+
+        <div id="agreementResults" class="agreement-results hidden"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="client-saved" id="savedReviews">
+    <div class="container">
+      <div class="client-section-head"><div><span class="eyebrow">Saved ecosystems</span><h2>Your Agreement Reviews</h2></div><p>Reopen prior comparisons without rebuilding the ecosystem from scratch.</p></div>
+      <div id="savedReviewsGrid" class="saved-reviews-grid"><div class="saved-empty">Loading saved reviews…</div></div>
+    </div>
+  </section>
+</main>
+
+<footer class="client-footer"><div class="container"><span>© 2026 TeamUpWithKrystal. All rights reserved.</span><span>BrandedAlign provides educational guidance, not legal advice or legal certification.</span></div></footer>
+<script src="/client-v1.js" defer></script>
+</body>
+</html>
