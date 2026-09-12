@@ -65,3 +65,9 @@ body .site-header:after{content:'';position:absolute;pointer-events:none;z-index
   .hero .hero-grid>div:first-child:before{display:none!important}
   body .hero:before{background:linear-gradient(130deg,rgba(255,255,255,.34),transparent 48%),radial-gradient(circle at 76% 34%,rgba(236,210,168,.18),transparent 34%)!important}
 }
+
+/* Mobile header cleanup: remove the decorative hero image/crest from the upper-right corner. */
+@media(max-width:760px){
+  body .site-header:before,
+  body .site-header:after{display:none!important;content:none!important;background:none!important}
+}
