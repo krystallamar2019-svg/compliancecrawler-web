@@ -1,5 +1,5 @@
 import { Queue } from 'bullmq';
-import IORedis from 'ioredis';
+import { Redis } from 'ioredis';
 import { config } from '../config.js';
 
 export interface ScanQueuePayload {
@@ -7,12 +7,12 @@ export interface ScanQueuePayload {
   organizationId: string;
 }
 
-let redis: IORedis | undefined;
+let redis: Redis | undefined;
 let queue: Queue<ScanQueuePayload> | undefined;
 
 export function getRedisConnection() {
   if (!config.REDIS_URL) throw new Error('REDIS_CONFIGURATION_REQUIRED');
-  redis ??= new IORedis(config.REDIS_URL, {
+  redis ??= new Redis(config.REDIS_URL, {
     maxRetriesPerRequest: null,
     enableReadyCheck: true,
     lazyConnect: true,
