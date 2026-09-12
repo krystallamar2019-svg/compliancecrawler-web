@@ -4,6 +4,7 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { config } from './config.js';
+import { supabaseAdmin } from './lib/supabase.js';
 import { requireAuth } from './middleware/auth.js';
 import { errorHandler, notFound } from './middleware/error.js';
 import { adminRouter } from './routes/admin.js';
@@ -39,6 +40,18 @@ export function createApp() {
 
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok', service: 'brandedalign-api' });
+  });
+
+  app.get('/ready', async (_req, res) => {
+    try {
+      const { error } = await supabaseAdmin
+        .from('organizations')
+        .select('id', { head: true, count: 'exact' });
+      if (error) throw error;
+      res.json({ status: 'ready', service: 'brandedalign-api', database: 'connected' });
+    } catch {
+      res.status(503).json({ status: 'not_ready', service: 'brandedalign-api' });
+    }
   });
 
   // Stripe signature verification requires the untouched raw request bytes.
