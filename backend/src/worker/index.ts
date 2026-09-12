@@ -2,7 +2,7 @@ import { Worker } from 'bullmq';
 import { deliverCapHubEvent } from '../integrations/caphub.js';
 import { logger } from '../lib/logger.js';
 import { enqueueCapHubEvent, type CapHubEventPayload } from '../queue/caphubQueue.js';
-import { getRedisConnection, type ScanQueuePayload } from '../queue/scanQueue.js';
+import { enqueueScan, getRedisConnection, type ScanQueuePayload } from '../queue/scanQueue.js';
 import { supabaseAdmin } from '../lib/supabase.js';
 import { processScan } from './processor.js';
 
@@ -68,7 +68,54 @@ capHubWorker.on('failed', (job) => {
   logger.warn({ eventId: job?.data.eventId, attemptsMade: job?.attemptsMade }, 'CapHub delivery attempt failed');
 });
 
+async function recoverInterruptedScans() {
+  const recoverableStatuses = ['Queued', 'Running', 'Processing findings', 'Generating report'];
+  const { data: scans, error } = await supabaseAdmin
+    .from('scan_jobs')
+    .select('id,organization_id,status')
+    .in('status', recoverableStatuses)
+    .order('created_at', { ascending: true })
+    .limit(500);
+
+  if (error) {
+    logger.error('Could not inspect recoverable scans at worker startup');
+    return;
+  }
+
+  for (const scan of scans ?? []) {
+    if (scan.status !== 'Queued') {
+      const { error: resetError } = await supabaseAdmin
+        .from('scan_jobs')
+        .update({
+          status: 'Queued',
+          started_at: null,
+          failed_at: null,
+          safe_error_code: null,
+        })
+        .eq('id', scan.id)
+        .eq('organization_id', scan.organization_id)
+        .in('status', recoverableStatuses);
+
+      if (resetError) {
+        logger.warn({ scanId: scan.id }, 'Could not reset interrupted scan for recovery');
+        continue;
+      }
+    }
+
+    try {
+      await enqueueScan({ scanId: scan.id, organizationId: scan.organization_id });
+    } catch {
+      logger.warn({ scanId: scan.id }, 'Could not requeue recoverable scan');
+    }
+  }
+
+  if ((scans ?? []).length > 0) {
+    logger.info({ recoveredCount: scans?.length ?? 0 }, 'Recovered queued or interrupted scans');
+  }
+}
+
 logger.info({ scanConcurrency: 2, capHubConcurrency: 2 }, 'BrandedAlign workers started');
+void recoverInterruptedScans();
 
 async function shutdown(signal: string) {
   logger.info({ signal }, 'Stopping BrandedAlign workers');
