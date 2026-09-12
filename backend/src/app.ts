@@ -8,6 +8,7 @@ import { supabaseAdmin } from './lib/supabase.js';
 import { requireAuth } from './middleware/auth.js';
 import { errorHandler, notFound } from './middleware/error.js';
 import { adminRouter } from './routes/admin.js';
+import { agreementReviewsRouter } from './routes/agreementReviews.js';
 import { billingRouter } from './routes/billing.js';
 import { fitCheckRouter } from './routes/fitCheck.js';
 import { meRouter } from './routes/me.js';
@@ -100,6 +101,7 @@ export function createApp() {
 
   app.use('/api/me', meRouter);
   app.use('/api', billingRouter);
+  app.use('/api/agreement-reviews', agreementReviewsRouter);
   app.use('/api/scans', scansRouter);
   app.use('/api/reports', reportsRouter);
   app.use('/api/sites', sitesRouter);
