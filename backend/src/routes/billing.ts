@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import type Stripe from 'stripe';
 import { BillingConfigurationError, getStripe, resolveTestPrice, stripeUrls, type PaidPlanKey } from '../billing/stripe.js';
+import { config } from '../config.js';
 import { supabaseAdmin } from '../lib/supabase.js';
 import type { AuthenticatedRequest } from '../types/auth.js';
 
@@ -105,7 +105,7 @@ billingRouter.post('/billing-portal', async (req, res, next) => {
       return;
     }
 
-    const returnUrl = (await Promise.resolve(stripeUrls())).success;
+    const returnUrl = config.APP_URL ?? stripeUrls().success;
     const portal = await stripe.billingPortal.sessions.create({
       customer: organization.stripe_customer_id,
       return_url: returnUrl,
