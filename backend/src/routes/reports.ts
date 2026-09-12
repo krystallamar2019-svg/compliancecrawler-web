@@ -44,7 +44,7 @@ reportsRouter.get('/:id', async (req, res, next) => {
       .from('findings')
       .select('id,scan_page_id,category,severity,title,plain_language_explanation,evidence_excerpt,source_location,recommendation,suggested_revision,confidence,standard_reference,created_at')
       .eq('scan_job_id', report.scan_job_id)
-      .eq('organization_id', organizationId)
+      .eq('org_id', organizationId)
       .order('created_at', { ascending: true });
     if (findingsError) throw findingsError;
 
