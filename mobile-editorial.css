@@ -1,0 +1,41 @@
+@media(max-width:980px){
+  body .hero{min-height:auto!important;padding:48px 0 26px!important}
+  .hero .hero-grid{display:grid!important;grid-template-columns:minmax(0,1.45fr) minmax(260px,.75fr)!important;gap:18px!important;align-items:center!important}
+  .hero .hero-copy{min-width:0!important;max-width:none!important;width:100%!important}
+  .hero .hero-copy h1{font-size:clamp(56px,7.5vw,78px)!important;max-width:760px!important;line-height:.98!important}
+  .hero .hero-copy p{max-width:680px!important;margin:20px 0 24px!important}
+  .hero .hero-actions{grid-template-columns:1fr!important;max-width:680px!important;gap:10px!important}
+  .hero .hero-choice{min-height:92px!important;padding:16px 52px 16px 16px!important;display:grid!important;grid-template-columns:42px 1fr!important;column-gap:12px!important;align-items:center!important}
+  .hero .hero-choice-icon{width:42px!important;height:42px!important;margin:0!important;grid-row:1 / span 2!important}
+  .hero .hero-choice:after{top:50%!important;right:16px!important;transform:translateY(-50%)!important}
+  .hero .hero-art{position:relative!important;min-height:390px!important;align-self:stretch!important;overflow:visible!important}
+  .hero .orb-stage{position:absolute!important;right:-32px!important;left:auto!important;top:50%!important;transform:translateY(-50%)!important;width:min(32vw,360px)!important;height:min(42vw,470px)!important;margin:0!important;background-position:center!important;background-size:contain!important;filter:drop-shadow(0 18px 42px rgba(28,52,53,.10)) drop-shadow(0 0 24px rgba(214,171,86,.17))!important}
+}
+
+@media(max-width:640px){
+  html,body{max-width:100%;overflow-x:hidden}
+  .container{width:calc(100% - 30px)!important;max-width:none!important}
+  body .hero{padding:36px 0 0!important;overflow:hidden!important;position:relative!important}
+  .hero .hero-grid{display:block!important;width:100%!important}
+  .hero .hero-copy{position:relative!important;z-index:3!important;min-width:0!important;width:100%!important}
+  .hero .hero-copy h1{font-size:clamp(46px,13vw,58px)!important;line-height:.95!important;letter-spacing:-.045em!important;max-width:100%!important;margin-bottom:0!important}
+  .hero .hero-copy p{font-size:16px!important;line-height:1.55!important;max-width:100%!important;margin:18px 0 22px!important}
+  .hero .hero-actions{display:grid!important;grid-template-columns:1fr!important;gap:10px!important;max-width:none!important;width:100%!important}
+  .hero .hero-choice{min-height:90px!important;width:100%!important;padding:14px 48px 14px 15px!important;border-radius:18px!important;background:rgba(255,255,255,.78)!important;backdrop-filter:blur(14px)!important;box-shadow:0 14px 34px rgba(18,43,57,.07)!important;border:1px solid rgba(18,43,57,.09)!important}
+  .hero .hero-choice.audit{background:linear-gradient(180deg,rgba(255,250,248,.88),rgba(247,235,231,.72))!important}
+  .hero .hero-choice.fit{background:linear-gradient(180deg,rgba(255,249,235,.9),rgba(246,230,198,.68))!important}
+  .hero .hero-choice strong{font-size:20px!important}
+  .hero .hero-choice small{font-size:8px!important;letter-spacing:.1em!important;margin-top:2px!important}
+  .hero .hero-art{position:relative!important;min-height:210px!important;height:210px!important;width:100%!important;margin-top:8px!important;overflow:visible!important;pointer-events:none!important}
+  .hero .hero-art:before{content:'';position:absolute;right:-54px;bottom:-74px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(191,233,231,.30),rgba(239,213,168,.14) 48%,transparent 70%);filter:blur(8px);pointer-events:none}
+  .hero .orb-stage{position:absolute!important;right:-58px!important;left:auto!important;top:auto!important;bottom:-78px!important;transform:none!important;width:255px!important;height:315px!important;max-width:none!important;margin:0!important;background-position:center!important;background-size:contain!important;filter:drop-shadow(0 16px 34px rgba(28,52,53,.08)) drop-shadow(0 0 20px rgba(214,171,86,.15))!important;opacity:.96!important}
+  .trust-band{padding:18px 0 38px!important;position:relative!important;z-index:4!important}
+  .trust-band .trust-row{grid-template-columns:1fr!important}
+}
+
+@media(max-width:390px){
+  .container{width:calc(100% - 24px)!important}
+  .hero .hero-copy h1{font-size:43px!important}
+  .hero .hero-art{height:190px!important;min-height:190px!important}
+  .hero .orb-stage{width:225px!important;height:285px!important;right:-52px!important;bottom:-74px!important}
+}
