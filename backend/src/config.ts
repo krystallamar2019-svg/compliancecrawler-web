@@ -20,6 +20,7 @@ const schema = z.object({
   CAPHUB_WEBHOOK_URL: optionalUrl,
   CAPHUB_WEBHOOK_SECRET: z.string().min(1).optional(),
   CRAWLER_API_SECRET: z.string().min(1).optional(),
+  CRAWLER_ENGINE: z.enum(['playwright', 'static']).default('playwright'),
   REPORT_SIGNING_SECRET: z.string().min(1).optional(),
   SENTRY_DSN: z.string().optional(),
   EMAIL_PROVIDER_API_KEY: z.string().min(1).optional(),
