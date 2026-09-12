@@ -13,7 +13,7 @@ export class BillingConfigurationError extends Error {
 let client: Stripe | undefined;
 
 export function getStripe(): Stripe {
-  const key = config.STRIPE_SECRET_KEY;
+  const key = config.STRIPE_SECRET_KEY?.trim();
   if (!key) throw new BillingConfigurationError();
   if (!key.startsWith('sk_test_')) {
     throw new BillingConfigurationError('STRIPE_TEST_MODE_REQUIRED');
