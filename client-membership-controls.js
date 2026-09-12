@@ -13,7 +13,7 @@
     .membership-action-stack{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex:0 0 auto}
     .membership-cancel-btn{border:0;background:transparent;padding:2px 3px;color:#7b8588;font-size:10px;font-weight:800;text-decoration:underline;text-underline-offset:3px;cursor:pointer;white-space:nowrap}
     .membership-cancel-btn:disabled{cursor:default;text-decoration:none;opacity:.72}
-    .membership-action-status{display:none;max-width:260px;font-size:10px;font-weight:800;color:#537078;line-height:1.4;text-align:right}
+    .membership-action-status{display:none;max-width:280px;font-size:10px;font-weight:800;color:#537078;line-height:1.4;text-align:right}
     .membership-action-status.show{display:block}
     .membership-action-status.error{color:#9a4b40}
     .client-membership-grid>div:nth-child(1),.client-membership-grid>div:nth-child(2){display:none}
@@ -52,19 +52,26 @@
       const next=nextPlan[plan];if(next){up.hidden=false;up.dataset.target=next;up.textContent='Upgrade to '+label[next]+' →'}else up.hidden=true;
     }catch(err){console.error('Membership actions unavailable',err)}
   }
+  async function openPortal(message,button){
+    if(button)button.disabled=true;
+    status(message);
+    try{
+      const result=await api('/api/billing-portal',{method:'POST',body:'{}'});
+      if(!result?.url)throw new Error('Billing portal unavailable.');
+      location.assign(result.url);
+    }catch(err){status(err.message||'Billing portal could not be opened.',true);if(button)button.disabled=false}
+  }
   async function upgrade(){
     const btn=document.getElementById('membershipUpgradeBtn');const target=btn?.dataset.target;if(!btn||!target)return;
-    if(!confirm('Upgrade to '+label[target]+' now? Stripe will apply mid-cycle proration and keep your current renewal date.'))return;
-    btn.disabled=true;status('Applying your upgrade…');
-    try{const result=await api('/api/me/upgrade',{method:'POST',body:'{}'});if(result.paymentUrl){location.assign(result.paymentUrl);return}status('Upgrade successful. Refreshing…');setTimeout(()=>location.reload(),1000)}catch(err){status(err.message||'Upgrade could not be completed.',true);btn.disabled=false}
+    if(!confirm('Open secure billing to upgrade to '+label[target]+'? Stripe will show the billing change before you confirm.'))return;
+    await openPortal('Opening secure billing for your upgrade…',btn);
   }
   async function cancel(){
     const btn=document.getElementById('membershipCancelBtn');if(!btn||btn.disabled)return;
     let me=null;try{me=await api('/api/me')}catch{}
     const end=fmt(me?.currentPeriodEnd);
-    if(!confirm('Cancel membership renewal? Your access will stay active through '+end+'.'))return;
-    btn.disabled=true;status('Scheduling cancellation…');
-    try{await api('/api/me/cancel',{method:'POST',body:'{}'});btn.textContent='Cancellation scheduled';document.getElementById('membershipUpgradeBtn').hidden=true;status('Membership stays active through '+end+'.')}catch(err){status(err.message||'Cancellation could not be scheduled.',true);btn.disabled=false}
+    if(!confirm('Open secure billing to cancel renewal? Your current access remains active through '+end+'.'))return;
+    await openPortal('Opening secure billing to manage cancellation…',btn);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh);else refresh();
   window.addEventListener('pageshow',()=>setTimeout(refresh,150));
