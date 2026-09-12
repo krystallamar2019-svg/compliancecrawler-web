@@ -40,3 +40,5 @@
   .hero .hero-grid>div:first-child h1{font-size:41px!important}
   .hero .hero-grid>div:first-child:before{left:-24px;right:-24px;top:-18px;height:238px;opacity:.98}
 }
+
+/* deploy trigger: lossless hero asset */
