@@ -64,6 +64,28 @@ openDive=function(d){
   document.getElementById('diveContent').innerHTML=html;
   openModal('diveModal');
 };
+
+function baHandleEntryLink(){
+  const p=new URLSearchParams(location.search);
+  const action=String(p.get('action')||'').toLowerCase();
+  const plan=String(p.get('plan')||'').toLowerCase();
+  let handled=false;
+  if(['steward','harvest','abundance'].includes(plan)){
+    handled=true;
+    setTimeout(()=>beginCheckout(plan),250);
+  }else if(action==='login'){
+    handled=true;
+    setTimeout(()=>showAuth(null,'signin'),250);
+  }else if(action==='signup'){
+    handled=true;
+    setTimeout(()=>showAuth(null,'signup'),250);
+  }else if(action==='fit'){
+    handled=true;
+    setTimeout(()=>document.getElementById('fit')?.scrollIntoView({behavior:'smooth',block:'start'}),250);
+  }
+  if(handled)history.replaceState({},'',location.pathname+(location.hash||''));
+}
+setTimeout(baHandleEntryLink,300);
 `;
 
 fs.readFileSync=function(file,options){
