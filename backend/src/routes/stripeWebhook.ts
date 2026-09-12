@@ -4,6 +4,7 @@ import { config } from '../config.js';
 import { BillingConfigurationError, getStripe } from '../billing/stripe.js';
 import { supabaseAdmin } from '../lib/supabase.js';
 import { logger } from '../lib/logger.js';
+import { enqueueCapHubEvent } from '../queue/caphubQueue.js';
 
 function customerIdOf(customer: string | Stripe.Customer | Stripe.DeletedCustomer | null): string | null {
   if (!customer) return null;
@@ -88,9 +89,20 @@ async function syncSubscription(subscription: Stripe.Subscription) {
       current_period_start: period.start,
       current_period_end: period.end,
       cancel_at_period_end: subscription.cancel_at_period_end,
+      livemode: false,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'stripe_subscription_id' });
   if (mirrorError) throw mirrorError;
+
+  void enqueueCapHubEvent({
+    eventType: 'subscription.updated',
+    supabase_org_id: organizationId,
+    planName: planKey,
+    subscriptionStatus: subscription.status,
+    renewalDate: period.end,
+  }).catch(() => {
+    logger.warn({ organizationId }, 'CapHub subscription sync could not be queued');
+  });
 }
 
 function invoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
