@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { createRemoteJWKSet, decodeProtectedHeader, jwtVerify } from 'jose';
+import { createRemoteJWKSet, decodeJwt, decodeProtectedHeader, jwtVerify, type JWTPayload } from 'jose';
 import { config } from '../config.js';
 import { supabaseAdmin } from '../lib/supabase.js';
 import type { AuthenticatedRequest } from '../types/auth.js';
@@ -12,7 +12,27 @@ class AuthError extends Error {
   }
 }
 
-async function verifyToken(token: string): Promise<string> {
+interface VerifiedIdentity {
+  userId: string;
+  aal: string | null;
+  issuedAt: number | null;
+  sessionId: string | null;
+}
+
+function identityFromPayload(payload: JWTPayload, expectedUserId?: string): VerifiedIdentity {
+  if (!payload.sub || (expectedUserId && payload.sub !== expectedUserId)) {
+    throw new AuthError('INVALID_ACCESS_TOKEN');
+  }
+
+  return {
+    userId: payload.sub,
+    aal: typeof payload.aal === 'string' ? payload.aal : null,
+    issuedAt: typeof payload.iat === 'number' ? payload.iat : null,
+    sessionId: typeof payload.session_id === 'string' ? payload.session_id : null,
+  };
+}
+
+async function verifyToken(token: string): Promise<VerifiedIdentity> {
   const header = decodeProtectedHeader(token);
 
   // Legacy Supabase projects may still issue HS256 tokens. Those cannot be
@@ -20,7 +40,7 @@ async function verifyToken(token: string): Promise<string> {
   if (header.alg === 'HS256') {
     const { data, error } = await supabaseAdmin.auth.getUser(token);
     if (error || !data.user?.id) throw new AuthError('INVALID_ACCESS_TOKEN');
-    return data.user.id;
+    return identityFromPayload(decodeJwt(token), data.user.id);
   }
 
   const { payload } = await jwtVerify(token, jwks, {
@@ -28,8 +48,7 @@ async function verifyToken(token: string): Promise<string> {
     audience: 'authenticated',
   });
 
-  if (!payload.sub) throw new AuthError('INVALID_ACCESS_TOKEN');
-  return payload.sub;
+  return identityFromPayload(payload);
 }
 
 async function resolveOrganization(userId: string, requestedOrgHeader: string | undefined) {
@@ -65,14 +84,17 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     const token = authorization.slice('Bearer '.length).trim();
     if (!token) throw new AuthError('AUTHORIZATION_REQUIRED');
 
-    const userId = await verifyToken(token);
+    const identity = await verifyToken(token);
     const requestedOrg = req.header('x-brandedalign-org') ?? undefined;
-    const membership = await resolveOrganization(userId, requestedOrg);
+    const membership = await resolveOrganization(identity.userId, requestedOrg);
 
     (req as AuthenticatedRequest).auth = {
-      userId,
+      userId: identity.userId,
       organizationId: membership.org_id,
       organizationRole: membership.role,
+      aal: identity.aal,
+      issuedAt: identity.issuedAt,
+      sessionId: identity.sessionId,
     };
 
     next();
