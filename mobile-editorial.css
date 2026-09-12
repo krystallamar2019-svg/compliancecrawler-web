@@ -34,7 +34,7 @@ body .site-header:after{content:'';position:absolute;pointer-events:none;z-index
   body .hero{padding:34px 0 22px!important;overflow:hidden!important}
   .hero .hero-grid{display:block!important;width:100%!important}
   .hero .hero-grid>div:first-child{position:relative!important;z-index:3!important;isolation:isolate!important;min-width:0!important;width:100%!important;max-width:none!important;margin:0!important;text-align:left!important}
-  .hero .hero-grid>div:first-child:before{content:'';position:absolute;z-index:0;pointer-events:none;left:-36px;right:-32px;top:-24px;height:260px;background:radial-gradient(circle at 8% 24%,rgba(36,166,184,.40) 0 38px,rgba(36,166,184,.20) 39px 64px,transparent 94px),radial-gradient(circle at 92% 9%,rgba(255,215,122,.42) 0 31px,rgba(232,184,76,.19) 32px 58px,transparent 88px),radial-gradient(circle at 82% 76%,rgba(235,240,242,.72) 0 26px,rgba(141,226,232,.20) 27px 52px,transparent 80px);filter:blur(4px);opacity:.98}
+  .hero .hero-grid>div:first-child:before{content:'';position:absolute;z-index:0;pointer-events:none;left:-10px;right:-10px;top:8px;height:300px;background:radial-gradient(circle at 18% 34%,rgba(36,166,184,.34) 0 44px,rgba(36,166,184,.16) 45px 82px,transparent 122px),radial-gradient(circle at 92% 14%,rgba(255,215,122,.30) 0 30px,rgba(232,184,76,.14) 31px 58px,transparent 92px),radial-gradient(circle at 84% 78%,rgba(235,240,242,.54) 0 24px,rgba(141,226,232,.14) 25px 52px,transparent 84px);filter:blur(8px);opacity:.82}
   .hero .hero-grid>div:first-child h1{font-size:clamp(44px,12vw,54px)!important;line-height:.97!important;letter-spacing:-.04em!important;max-width:calc(100% - 4px)!important;margin:0!important;padding-left:4px!important;box-sizing:border-box!important;position:relative!important;z-index:1!important}
   .hero .hero-grid>div:first-child p{font-size:16px!important;line-height:1.55!important;max-width:100%!important;margin:18px 0 22px!important;position:relative!important;z-index:1!important}
   .hero .hero-actions{display:grid!important;grid-template-columns:1fr!important;gap:10px!important;max-width:none!important;width:100%!important;position:relative!important;z-index:1!important}
@@ -55,7 +55,7 @@ body .site-header:after{content:'';position:absolute;pointer-events:none;z-index
 @media(max-width:390px){
   .container{width:calc(100% - 24px)!important}
   .hero .hero-grid>div:first-child h1{font-size:41px!important}
-  .hero .hero-grid>div:first-child:before{left:-24px;right:-24px;top:-18px;height:238px;opacity:.98}
+  .hero .hero-grid>div:first-child:before{left:-6px;right:-6px;top:12px;height:276px;opacity:.82}
   body .site-header:before{right:-46px;top:42%;width:72px;height:66px;background-size:116px auto;opacity:.68}
 }
 
