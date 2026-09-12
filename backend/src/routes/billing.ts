@@ -7,9 +7,12 @@ import type { AuthenticatedRequest } from '../types/auth.js';
 
 export const billingRouter = Router();
 
-const checkoutSchema = z.object({
-  planKey: z.enum(['steward', 'harvest', 'abundance']),
-});
+const checkoutSchema = z.union([
+  z.object({ planKey: z.enum(['steward', 'harvest', 'abundance']) }),
+  z.object({ plan_key: z.enum(['steward', 'harvest', 'abundance']) }),
+]).transform((value) => ({
+  planKey: 'planKey' in value ? value.planKey : value.plan_key,
+}));
 
 async function getOrCreateCustomer(organizationId: string, existingCustomerId: string | null): Promise<string> {
   const stripe = getStripe();
