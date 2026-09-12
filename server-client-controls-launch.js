@@ -12,4 +12,4 @@ fs.readFileSync=function(file,options){
   return encoding?injected:Buffer.from(injected);
 };
 
-require('./server-client-launch.js');
+require('./server-legal-launch.js');
