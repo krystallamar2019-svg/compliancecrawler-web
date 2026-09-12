@@ -29,16 +29,21 @@ function safeWorkerError(error: unknown) {
 }
 
 async function setStatus(scanId: string, organizationId: string, status: string, extra: Record<string, unknown> = {}) {
+  const terminal = status === 'Completed' || status === 'Failed' || status === 'Canceled';
   const { error } = await supabaseAdmin
     .from('scan_jobs')
-    .update({ status, ...extra })
+    .update({
+      status,
+      ...(terminal ? { lease_expires_at: null } : {}),
+      ...extra,
+    })
     .eq('id', scanId)
     .eq('organization_id', organizationId);
   if (error) throw error;
 }
 
-export async function processScan(job: Job<ScanQueuePayload>) {
-  const { scanId, organizationId } = job.data;
+export async function processScanPayload(payload: ScanQueuePayload) {
+  const { scanId, organizationId } = payload;
 
   const { data: scan, error: scanError } = await supabaseAdmin
     .from('scan_jobs')
@@ -189,4 +194,8 @@ export async function processScan(job: Job<ScanQueuePayload>) {
     }).catch(() => undefined);
     throw error;
   }
+}
+
+export async function processScan(job: Job<ScanQueuePayload>) {
+  return processScanPayload(job.data);
 }
