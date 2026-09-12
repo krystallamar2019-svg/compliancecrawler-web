@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import { config } from '../config.js';
 import { enqueueScan } from '../queue/scanQueue.js';
 import { assertSafeDestination } from '../security/urlSafety.js';
 import { supabaseAdmin } from '../lib/supabase.js';
@@ -76,8 +77,6 @@ scansRouter.post('/', async (req, res, next) => {
         return;
       }
 
-      // Initial crawler safety ceiling. It can be raised after load testing even
-      // when a paid plan's commercial page allowance is higher.
       pageLimit = Math.min(Math.max(Number(organization.max_pages) || 1, 1), 500);
     }
 
@@ -119,22 +118,24 @@ scansRouter.post('/', async (req, res, next) => {
     const scan = Array.isArray(rpcData) ? rpcData[0] : rpcData;
     if (!scan?.id) throw new Error('SCAN_JOB_CREATION_FAILED');
 
-    try {
-      await enqueueScan({ scanId: scan.id, organizationId });
-    } catch (error) {
-      await Promise.all([
-        supabaseAdmin.from('scan_jobs').update({
-          status: 'Failed',
-          failed_at: new Date().toISOString(),
-          safe_error_code: 'QUEUE_UNAVAILABLE',
-        }).eq('id', scan.id).eq('organization_id', organizationId),
-        supabaseAdmin.from('usage_ledger').update({
-          status: 'released',
-          units_consumed: 0,
-          updated_at: new Date().toISOString(),
-        }).eq('scan_job_id', scan.id).eq('organization_id', organizationId),
-      ]);
-      throw error;
+    if (config.REDIS_URL) {
+      try {
+        await enqueueScan({ scanId: scan.id, organizationId });
+      } catch (error) {
+        await Promise.all([
+          supabaseAdmin.from('scan_jobs').update({
+            status: 'Failed',
+            failed_at: new Date().toISOString(),
+            safe_error_code: 'QUEUE_UNAVAILABLE',
+          }).eq('id', scan.id).eq('organization_id', organizationId),
+          supabaseAdmin.from('usage_ledger').update({
+            status: 'released',
+            units_consumed: 0,
+            updated_at: new Date().toISOString(),
+          }).eq('scan_job_id', scan.id).eq('organization_id', organizationId),
+        ]);
+        throw error;
+      }
     }
 
     res.status(202).json({ scanId: scan.id, status: scan.status ?? 'Queued' });
