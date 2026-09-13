@@ -57,8 +57,20 @@
     });
   }
 
-  recoveryClient.auth.onAuthStateChange((event)=>{
-    if(event==='PASSWORD_RECOVERY')showResetModal();
+  recoveryClient.auth.onAuthStateChange((event,session)=>{
+    if(event==='PASSWORD_RECOVERY'){
+      showResetModal();
+      return;
+    }
+    if(
+      event==='SIGNED_IN' &&
+      session?.user &&
+      location.pathname==='/' &&
+      !localStorage.getItem('ba_pending_plan') &&
+      !location.hash.includes('type=recovery')
+    ){
+      location.assign('/client');
+    }
   });
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addForgotButton);else addForgotButton();
