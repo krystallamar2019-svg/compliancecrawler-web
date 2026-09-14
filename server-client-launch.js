@@ -36,6 +36,7 @@ http.createServer=function(handler){
     }
     if(url.pathname==='/client-v1.css')return sendClientFile(req,res,'client-v1.css','text/css; charset=utf-8');
     if(url.pathname==='/client-v1.js')return sendClientFile(req,res,'client-v1.js','application/javascript; charset=utf-8');
+    if(url.pathname==='/legal-runtime.js')return sendClientFile(req,res,'legal-runtime.js','application/javascript; charset=utf-8');
     return handler(req,res);
   });
 };
