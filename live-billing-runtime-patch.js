@@ -10,6 +10,7 @@ function patch(path, replacements) {
 }
 
 patch('src/billing/stripe.ts', [
+  ["const key = config.STRIPE_SECRET_KEY?.trim();", "const rawKey = config.STRIPE_SECRET_KEY ?? '';\n  const key = rawKey.trim().replace(/^['\"]|['\"]$/g, '').replace(/^STRIPE_SECRET_KEY=/, '');"],
   ["if (!key.startsWith('sk_test_')) {", "if (!key.startsWith('sk_live_')) {"],
   ["STRIPE_TEST_MODE_REQUIRED", "STRIPE_LIVE_MODE_REQUIRED"],
   [".select('stripe_test_price_id,is_active')", ".select('stripe_live_price_id,is_active')"],
