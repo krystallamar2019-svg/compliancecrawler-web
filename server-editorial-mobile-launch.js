@@ -25,6 +25,8 @@ const socialPreviewMeta=`
 <meta name="twitter:description" content="Check one offer, website, or promotion for potential issues, or review how multiple offers work together under one brand.">
 <meta name="twitter:image" content="https://brandedalign.com/assets/brandedalign-hero-static.webp">
 `;
+const legalRuntimeTag='<script src="/legal-runtime.js" defer></script>';
+
 fs.readFileSync=function(file,options){
   const out=originalRead(file,options);
   const base=path.basename(String(file));
@@ -37,7 +39,13 @@ fs.readFileSync=function(file,options){
   }
 
   if(base==='index-v2.html'){
-    const next=text.includes('property="og:title"')?text:text.replace('</head>',socialPreviewMeta+'\n</head>');
+    let next=text.includes('property="og:title"')?text:text.replace('</head>',socialPreviewMeta+'\n</head>');
+    if(!next.includes('/legal-runtime.js'))next=next.replace('</body>',legalRuntimeTag+'\n</body>');
+    return encoding?next:Buffer.from(next);
+  }
+
+  if(base==='client-v1.html'){
+    const next=text.includes('/legal-runtime.js')?text:text.replace('</body>',legalRuntimeTag+'\n</body>');
     return encoding?next:Buffer.from(next);
   }
 
