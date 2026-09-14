@@ -62,10 +62,12 @@
       showResetModal();
       return;
     }
+    const publicView=new URLSearchParams(location.search).get('public')==='1';
     if(
       event==='SIGNED_IN' &&
       session?.user &&
       location.pathname==='/' &&
+      !publicView &&
       !localStorage.getItem('ba_pending_plan') &&
       !location.hash.includes('type=recovery')
     ){
