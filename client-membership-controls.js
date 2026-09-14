@@ -30,7 +30,7 @@
     if(!card||!eyebrow||document.getElementById('membershipCardTop'))return;
     document.getElementById('membershipUpgradeGroup')?.remove();
     const wrap=document.createElement('div');wrap.id='membershipCardTop';wrap.className='membership-card-top';
-    wrap.innerHTML='<div class="membership-plan-summary"><div class="membership-plan-line" id="membershipPlanSummary">Membership</div><div class="membership-plan-sub">Current membership</div></div><div class="membership-action-stack"><button class="btn btn-primary btn-small" id="membershipUpgradeBtn" type="button" hidden>Upgrade</button><button class="membership-cancel-btn" id="membershipCancelBtn" type="button" hidden>Cancel membership</button><span class="membership-action-status" id="membershipActionStatus" aria-live="polite"></span></div>';
+    wrap.innerHTML='<div class="membership-plan-summary"><div class="membership-plan-line" id="membershipPlanSummary">Membership</div><div class="membership-plan-sub" id="membershipPlanSub">Current membership</div></div><div class="membership-action-stack"><button class="btn btn-primary btn-small" id="membershipUpgradeBtn" type="button" hidden>Upgrade</button><button class="membership-cancel-btn" id="membershipCancelBtn" type="button" hidden>Cancel membership</button><span class="membership-action-status" id="membershipActionStatus" aria-live="polite"></span></div>';
     eyebrow.insertAdjacentElement('afterend',wrap);
     document.getElementById('membershipUpgradeBtn').addEventListener('click',upgrade);
     document.getElementById('membershipCancelBtn').addEventListener('click',cancel);
@@ -39,12 +39,28 @@
     ensure();
     try{
       const me=await api('/api/me');
+      const role=String(me.organization?.role||'').toLowerCase();
+      const isOwner=role==='owner';
       const plan=String(me.plan||'free').toLowerCase();
       const subscriptionStatus=String(me.subscriptionStatus||'inactive').toLowerCase();
       const active=['active','trialing'].includes(subscriptionStatus);
       const summary=document.getElementById('membershipPlanSummary');
+      const sub=document.getElementById('membershipPlanSub');
+      const up=document.getElementById('membershipUpgradeBtn');
+      const cancelBtn=document.getElementById('membershipCancelBtn');
+      if(!up||!cancelBtn)return;
+
+      if(isOwner){
+        if(summary)summary.textContent='Owner / Admin';
+        if(sub)sub.textContent='TeamUpWithKrystal owner access';
+        up.hidden=true;
+        cancelBtn.hidden=true;
+        status('Unlimited owner access. Customer subscription controls are hidden on this account.');
+        return;
+      }
+
       if(summary)summary.textContent=(label[plan]||title(plan))+' · '+title(subscriptionStatus);
-      const up=document.getElementById('membershipUpgradeBtn');const cancelBtn=document.getElementById('membershipCancelBtn');if(!up||!cancelBtn)return;
+      if(sub)sub.textContent='Current membership';
       if(!active){up.hidden=true;cancelBtn.hidden=true;return}
       cancelBtn.hidden=false;
       if(me.cancelAtPeriodEnd){up.hidden=true;cancelBtn.disabled=true;cancelBtn.textContent='Cancellation scheduled';status('Membership stays active through '+fmt(me.currentPeriodEnd)+'.');return}
