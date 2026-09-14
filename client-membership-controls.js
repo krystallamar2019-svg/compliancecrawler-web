@@ -18,6 +18,9 @@
     .membership-action-status.error{color:#9a4b40}
     .client-membership-grid>div:nth-child(1),.client-membership-grid>div:nth-child(2){display:none}
     .client-membership-grid{grid-template-columns:1fr 1fr!important;margin-top:0!important}
+    body.owner-mode #clientBillingBtn,body.owner-mode #membershipUpgradeBtn,body.owner-mode #membershipCancelBtn,body.owner-mode .client-membership-grid{display:none!important}
+    body.owner-mode .membership-action-stack{align-items:flex-start}
+    body.owner-mode .membership-action-status{max-width:360px;text-align:left}
     @media(max-width:620px){.membership-card-top{flex-direction:column}.membership-action-stack{align-items:flex-start;width:100%}.membership-action-status{text-align:left}.client-membership-grid{grid-template-columns:1fr!important}}
   `;
   document.head.appendChild(style);
@@ -51,21 +54,28 @@
       if(!up||!cancelBtn)return;
 
       if(isOwner){
+        document.body.classList.add('owner-mode');
         if(summary)summary.textContent='Owner / Admin';
         if(sub)sub.textContent='TeamUpWithKrystal owner access';
-        up.hidden=true;
-        cancelBtn.hidden=true;
-        status('Unlimited owner access. Customer subscription controls are hidden on this account.');
+        up.hidden=true;up.style.display='none';
+        cancelBtn.hidden=true;cancelBtn.style.display='none';
+        const billing=document.getElementById('clientBillingBtn');if(billing)billing.style.display='none';
+        const grid=document.querySelector('.client-membership-grid');if(grid)grid.style.display='none';
+        const note=document.getElementById('clientMembershipNote');if(note)note.textContent='Owner workspace access is active. Agreement Check and owner tools are available.';
+        status('Owner access active. Customer billing and plan limits are hidden on this account.');
         return;
       }
 
+      document.body.classList.remove('owner-mode');
+      const billing=document.getElementById('clientBillingBtn');if(billing)billing.style.display='';
+      const grid=document.querySelector('.client-membership-grid');if(grid)grid.style.display='';
       if(summary)summary.textContent=(label[plan]||title(plan))+' · '+title(subscriptionStatus);
       if(sub)sub.textContent='Current membership';
       if(!active){up.hidden=true;cancelBtn.hidden=true;return}
-      cancelBtn.hidden=false;
-      if(me.cancelAtPeriodEnd){up.hidden=true;cancelBtn.disabled=true;cancelBtn.textContent='Cancellation scheduled';status('Membership stays active through '+fmt(me.currentPeriodEnd)+'.');return}
+      cancelBtn.hidden=false;cancelBtn.style.display='';
+      if(me.cancelAtPeriodEnd){up.hidden=true;up.style.display='none';cancelBtn.disabled=true;cancelBtn.textContent='Cancellation scheduled';status('Membership stays active through '+fmt(me.currentPeriodEnd)+'.');return}
       cancelBtn.disabled=false;cancelBtn.textContent='Cancel membership';status('');
-      const next=nextPlan[plan];if(next){up.hidden=false;up.dataset.target=next;up.textContent='Upgrade to '+label[next]+' →'}else up.hidden=true;
+      const next=nextPlan[plan];if(next){up.hidden=false;up.style.display='';up.dataset.target=next;up.textContent='Upgrade to '+label[next]+' →'}else{up.hidden=true;up.style.display='none'}
     }catch(err){console.error('Membership actions unavailable',err)}
   }
   async function openPortal(message,button){
