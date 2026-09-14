@@ -19,12 +19,11 @@
     .client-membership-grid>div:nth-child(1),.client-membership-grid>div:nth-child(2){display:none}
     .client-membership-grid{grid-template-columns:1fr 1fr!important;margin-top:0!important}
     body.owner-mode #clientBillingBtn,body.owner-mode #membershipUpgradeBtn,body.owner-mode #membershipCancelBtn,body.owner-mode .client-membership-grid{display:none!important}
-    body.owner-mode .membership-card-top{display:block!important;margin-top:12px!important;padding-bottom:18px!important}
-    body.owner-mode .membership-plan-summary{width:100%!important}
-    body.owner-mode .membership-plan-line{font-size:32px!important;line-height:1.08!important;white-space:normal!important}
-    body.owner-mode .membership-plan-sub{margin-top:8px!important;max-width:240px!important;line-height:1.45!important}
-    body.owner-mode .membership-action-stack{display:block!important;width:100%!important;margin-top:16px!important}
-    body.owner-mode .membership-action-status{display:block!important;max-width:none!important;width:100%!important;text-align:left!important;font-size:11px!important;line-height:1.5!important;font-weight:700!important}
+    body.owner-mode .membership-card-top{display:block!important}
+    body.owner-mode .membership-action-stack{margin-top:14px;align-items:flex-start!important}
+    body.owner-mode .membership-action-status{max-width:none;text-align:left!important;line-height:1.5}
+    body.owner-mode .membership-plan-line{font-size:30px;line-height:1.08}
+    body.owner-mode .membership-plan-sub{margin-top:9px}
     @media(max-width:620px){.membership-card-top{flex-direction:column}.membership-action-stack{align-items:flex-start;width:100%}.membership-action-status{text-align:left}.client-membership-grid{grid-template-columns:1fr!important}}
   `;
   document.head.appendChild(style);
@@ -59,6 +58,8 @@
 
       if(isOwner){
         document.body.classList.add('owner-mode');
+        activeMembership=true;
+        const agreement=document.getElementById('agreementForm');if(agreement)agreement.classList.remove('client-locked');
         if(summary)summary.textContent='Owner / Admin';
         if(sub)sub.textContent='TeamUpWithKrystal owner access';
         up.hidden=true;up.style.display='none';
