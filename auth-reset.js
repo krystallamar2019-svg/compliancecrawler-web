@@ -63,11 +63,13 @@
       return;
     }
     const publicView=new URLSearchParams(location.search).get('public')==='1';
+    const fromClient=document.referrer.startsWith(location.origin+'/client');
     if(
       event==='SIGNED_IN' &&
       session?.user &&
       location.pathname==='/' &&
       !publicView &&
+      !fromClient &&
       !localStorage.getItem('ba_pending_plan') &&
       !location.hash.includes('type=recovery')
     ){
