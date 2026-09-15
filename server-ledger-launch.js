@@ -1,5 +1,6 @@
 const fs=require('fs');
 const path=require('path');
+require('./pwa-icon-bootstrap.js');
 
 const upstreamRead=fs.readFileSync.bind(fs);
 
@@ -9,7 +10,7 @@ const pwaHead=`
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BrandedAlign">
-<link rel="apple-touch-icon" href="/brandedalign-app-icon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/brandedalign-app-icon-180.png">
 `;
 
 const pwaScript=`<script id="baPwaScript">
