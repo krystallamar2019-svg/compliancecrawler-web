@@ -1,0 +1,21 @@
+{
+  "id": "/",
+  "name": "BrandedAlign",
+  "short_name": "BrandedAlign",
+  "description": "Brand review, clarity, and risk-spotting tools for creators and business owners.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#FFFDF7",
+  "theme_color": "#102A3A",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/brandedalign-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
