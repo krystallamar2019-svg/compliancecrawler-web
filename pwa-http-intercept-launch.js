@@ -6,6 +6,7 @@ require('./pwa-icon-bootstrap.js');
 const root=__dirname;
 const originalCreateServer=http.createServer.bind(http);
 const iconPaths=new Set([
+  '/iconcheck',
   '/apple-touch-icon.png',
   '/apple-touch-icon-precomposed.png',
   '/apple-touch-icon-120x120-precomposed.png',
