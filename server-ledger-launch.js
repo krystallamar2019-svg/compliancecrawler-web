@@ -3,6 +3,26 @@ const path=require('path');
 
 const upstreamRead=fs.readFileSync.bind(fs);
 
+const pwaHead=`
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="application-name" content="BrandedAlign">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BrandedAlign">
+<link rel="apple-touch-icon" href="/brandedalign-app-icon.svg">
+`;
+
+const pwaScript=`<script id="baPwaScript">
+(function(){
+  function bootPwa(){
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('/sw.js').catch(function(err){console.warn('BrandedAlign service worker registration skipped',err)});
+    }
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bootPwa);else bootPwa();
+})();
+</script>`;
+
 const ledgerScript=`<script id="baAcceptanceLedgerScript">
 (function(){
   const VERSION='2026-09-14-v1';
@@ -84,7 +104,10 @@ fs.readFileSync=function(file,options){
   const base=path.basename(String(file));
   if(base!=='index-v2.html'&&base!=='client-v1.html')return out;
   const text=Buffer.isBuffer(out)?out.toString('utf8'):String(out);
-  const next=text.includes('id="baAcceptanceLedgerScript"')?text:text.replace('</body>',ledgerScript+'\n</body>');
+  let next=text;
+  if(!next.includes('href="/manifest.webmanifest"'))next=next.replace('</head>',pwaHead+'\n</head>');
+  if(!next.includes('id="baPwaScript"'))next=next.replace('</body>',pwaScript+'\n</body>');
+  if(!next.includes('id="baAcceptanceLedgerScript"'))next=next.replace('</body>',ledgerScript+'\n</body>');
   const encoding=typeof options==='string'?options:options&&options.encoding;
   return encoding?next:Buffer.from(next);
 };
