@@ -1,1 +1,1 @@
-Redeploy BrandedAlign working luxury orb after broken static hero asset. 2026-09-11T23:54Z
+Trigger BrandedAlign installable PWA release. 2026-09-14T20:03:00-06:00
