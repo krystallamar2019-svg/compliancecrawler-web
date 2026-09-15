@@ -1,0 +1,10 @@
+const fs=require('fs');
+const path=require('path');
+const file=path.join(__dirname,'server-launch.js');
+let s=fs.readFileSync(file,'utf8');
+const needle="if(url.pathname==='/assets/brandedalign-hero-static.webp')return serveFile(req,res,'assets/brandedalign-hero-static.webp','image/webp');if(url.pathname==='/robots.txt')";
+const insert="if(url.pathname==='/assets/brandedalign-hero-static.webp')return serveFile(req,res,'assets/brandedalign-hero-static.webp','image/webp');if(['/apple-touch-icon.png','/apple-touch-icon-precomposed.png','/apple-touch-icon-120x120-precomposed.png','/apple-touch-icon-120x120.png','/apple-touch-icon-152x152.png','/apple-touch-icon-167x167.png','/apple-touch-icon-180x180.png','/brandedalign-app-icon-180.png','/favicon.ico','/iconcheck'].includes(url.pathname))return serveFile(req,res,'brandedalign-app-icon-180.png','image/png');if(url.pathname==='/brandedalign-app-icon-192.png')return serveFile(req,res,'brandedalign-app-icon-192.png','image/png');if(url.pathname==='/brandedalign-app-icon-512.png')return serveFile(req,res,'brandedalign-app-icon-512.png','image/png');if(url.pathname==='/manifest.webmanifest')return serveFile(req,res,'manifest.webmanifest','application/manifest+json; charset=utf-8');if(url.pathname==='/sw.js')return serveFile(req,res,'sw.js','application/javascript; charset=utf-8');if(url.pathname==='/robots.txt')";
+if(!s.includes(needle)) throw new Error('server-launch route anchor not found');
+s=s.replace(needle,insert);
+fs.writeFileSync(file,s);
+console.log('Final BrandedAlign iOS icon routes v2 patched into server-launch.js');
