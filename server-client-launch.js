@@ -9,7 +9,7 @@ const clientHeaders={
   'Referrer-Policy':'strict-origin-when-cross-origin',
   'X-Frame-Options':'SAMEORIGIN',
   'Permissions-Policy':'camera=(), microphone=(), geolocation=()',
-  'Content-Security-Policy':"default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://pbprkgkvsxkpdhsmjzrc.supabase.co https://compliance-web-production-cf94.up.railway.app; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; frame-ancestors 'self'; base-uri 'self'; form-action 'self' https://checkout.stripe.com"
+  'Content-Security-Policy':"default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' https://pbprkgkvsxkpdhsmjzrc.supabase.co https://compliance-web-production-cf94.up.railway.app; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; frame-ancestors 'self'; base-uri 'self'; form-action 'self' https://checkout.stripe.com"
 };
 
 function sendClientFile(req,res,filename,type){
@@ -24,9 +24,59 @@ function sendClientFile(req,res,filename,type){
   }
 }
 
+function sendAdmin(req,res){
+  try{
+    let html=fs.readFileSync(path.join(root,'client-v1.html'),'utf8');
+    const adminGate=`<script id="baAdminGate">
+(async function(){
+  try{
+    const session=await getSession();
+    if(!session?.access_token){
+      sessionStorage.setItem('ba_after_login','/admin');
+      location.replace('/');
+      return;
+    }
+    const me=await api('/api/me');
+    const role=String(me?.organization?.role||'').toLowerCase();
+    if(role!=='owner'){
+      location.replace('/client');
+      return;
+    }
+    document.body.classList.add('owner-mode');
+    const brandSub=document.querySelector('.brand-copy span');if(brandSub)brandSub.textContent='Admin';
+    const eyebrow=document.querySelector('.client-welcome .eyebrow');if(eyebrow)eyebrow.textContent='BrandedAlign Owner Workspace';
+    const heading=document.querySelector('.client-welcome h1');if(heading)heading.textContent='Owner workspace';
+    const intro=document.querySelector('.client-welcome p');if(intro)intro.textContent='Manage and review BrandedAlign from the owner side without customer billing or plan limits.';
+  }catch(err){
+    console.error('Admin access check failed',err);
+    location.replace('/client');
+  }
+})();
+</script>`;
+    html=html
+      .replace('<title>Client Portal | BrandedAlign</title>','<title>Admin | BrandedAlign</title>')
+      .replace('<span>Client Portal</span>','<span>Admin</span>')
+      .replace('aria-label="Client portal navigation"','aria-label="Admin navigation"')
+      .replace('</body>',adminGate+'\n</body>');
+    res.writeHead(200,{...clientHeaders,'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});
+    if(req.method==='HEAD')return res.end();
+    res.end(html);
+  }catch{
+    res.writeHead(500,{...clientHeaders,'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'});
+    res.end('BrandedAlign Admin is temporarily unavailable.');
+  }
+}
+
 http.createServer=function(handler){
   return originalCreateServer((req,res)=>{
     const url=new URL(req.url,'http://localhost');
+    if(['/admin','/admin/'].includes(url.pathname)){
+      if(req.method!=='GET'&&req.method!=='HEAD'){
+        res.writeHead(405,{...clientHeaders,'Content-Type':'text/plain; charset=utf-8',Allow:'GET, HEAD'});
+        return res.end('Method Not Allowed');
+      }
+      return sendAdmin(req,res);
+    }
     if(['/client','/client/'].includes(url.pathname)){
       if(req.method!=='GET'&&req.method!=='HEAD'){
         res.writeHead(405,{...clientHeaders,'Content-Type':'text/plain; charset=utf-8',Allow:'GET, HEAD'});
