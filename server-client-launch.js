@@ -37,6 +37,18 @@ http.createServer=function(handler){
     if(url.pathname==='/client-v1.css')return sendClientFile(req,res,'client-v1.css','text/css; charset=utf-8');
     if(url.pathname==='/client-v1.js')return sendClientFile(req,res,'client-v1.js','application/javascript; charset=utf-8');
     if(url.pathname==='/legal-runtime.js')return sendClientFile(req,res,'legal-runtime.js','application/javascript; charset=utf-8');
+
+    if(url.pathname==='/manifest.webmanifest')return sendClientFile(req,res,'manifest.webmanifest','application/manifest+json; charset=utf-8');
+    if(url.pathname==='/sw.js')return sendClientFile(req,res,'sw.js','application/javascript; charset=utf-8');
+
+    if([
+      '/brandedalign-app-icon-180.png',
+      '/apple-touch-icon.png',
+      '/apple-touch-icon-precomposed.png'
+    ].includes(url.pathname))return sendClientFile(req,res,'brandedalign-app-icon-180.png','image/png');
+    if(url.pathname==='/brandedalign-app-icon-192.png')return sendClientFile(req,res,'brandedalign-app-icon-192.png','image/png');
+    if(url.pathname==='/brandedalign-app-icon-512.png')return sendClientFile(req,res,'brandedalign-app-icon-512.png','image/png');
+
     return handler(req,res);
   });
 };
