@@ -27,8 +27,14 @@ function sendClientFile(req,res,filename,type){
 function sendAdmin(req,res){
   try{
     let html=fs.readFileSync(path.join(root,'client-v1.html'),'utf8');
+    const adminLock=`<style id="baAdminLock">body.ba-admin-pending .client-header,body.ba-admin-pending .client-main,body.ba-admin-pending .client-footer{visibility:hidden}.ba-admin-screen{min-height:100vh;display:grid;place-items:center;padding:28px;background:#fffdf7;color:#102a3a;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}.ba-admin-card{width:min(520px,100%);padding:32px;border:1px solid rgba(16,42,58,.12);border-radius:24px;background:#fff;box-shadow:0 24px 70px rgba(16,42,58,.10)}.ba-admin-card h1{margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:34px}.ba-admin-card p{line-height:1.6;color:#4d626c}.ba-admin-card a{display:inline-block;margin-top:12px;color:#0b6477;font-weight:800}</style>`;
     const adminGate=`<script id="baAdminGate">
 (async function(){
+  const body=document.body;
+  function lock(title,message,linkText,linkHref){
+    body.className='';
+    body.innerHTML='<main class="ba-admin-screen"><section class="ba-admin-card"><h1>'+title+'</h1><p>'+message+'</p>'+(linkHref?'<a href="'+linkHref+'">'+linkText+'</a>':'')+'</section></main>';
+  }
   try{
     const session=await getSession();
     if(!session?.access_token){
@@ -36,29 +42,40 @@ function sendAdmin(req,res){
       location.replace('/');
       return;
     }
-    const me=await api('/api/me');
-    const role=String(me?.organization?.role||'').toLowerCase();
-    if(role!=='owner'){
-      location.replace('/client');
+    const gate=await api('/api/admin/me');
+    if(!gate?.mfa){
+      lock('Admin locked','Multi factor authentication is required before owner access can open.','Return to BrandedAlign','/');
       return;
     }
-    document.body.classList.add('owner-mode');
+    body.classList.remove('ba-admin-pending');
+    body.classList.add('owner-mode');
     const brandSub=document.querySelector('.brand-copy span');if(brandSub)brandSub.textContent='Admin';
     const eyebrow=document.querySelector('.client-welcome .eyebrow');if(eyebrow)eyebrow.textContent='BrandedAlign Owner Workspace';
     const heading=document.querySelector('.client-welcome h1');if(heading)heading.textContent='Owner workspace';
     const intro=document.querySelector('.client-welcome p');if(intro)intro.textContent='Manage and review BrandedAlign from the owner side without customer billing or plan limits.';
   }catch(err){
-    console.error('Admin access check failed',err);
-    location.replace('/client');
+    const code=String(err?.message||'');
+    if(code==='ADMIN_MFA_REQUIRED'){
+      lock('Admin locked','Your owner account is recognized, but multi factor authentication must be active before this workspace can open.','Return to BrandedAlign','/');
+      return;
+    }
+    if(code==='AUTH_REQUIRED'||code==='AUTHORIZATION_REQUIRED'){
+      sessionStorage.setItem('ba_after_login','/admin');
+      location.replace('/');
+      return;
+    }
+    lock('Access denied','This workspace is restricted to an approved BrandedAlign administrator using multi factor authentication.','Go to client portal','/client');
   }
 })();
 </script>`;
     html=html
       .replace('<title>Client Portal | BrandedAlign</title>','<title>Admin | BrandedAlign</title>')
+      .replace('</head>',adminLock+'\n</head>')
+      .replace('<body class="client-body">','<body class="client-body ba-admin-pending">')
       .replace('<span>Client Portal</span>','<span>Admin</span>')
       .replace('aria-label="Client portal navigation"','aria-label="Admin navigation"')
       .replace('</body>',adminGate+'\n</body>');
-    res.writeHead(200,{...clientHeaders,'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});
+    res.writeHead(200,{...clientHeaders,'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store, max-age=0','Pragma':'no-cache'});
     if(req.method==='HEAD')return res.end();
     res.end(html);
   }catch{
