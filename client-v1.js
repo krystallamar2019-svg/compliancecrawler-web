@@ -35,9 +35,40 @@ async function api(path,options={}){
   return d;
 }
 
+async function discoverAgreement(party){
+  if(party.documentText)return party;
+  const session=await getSession();
+  if(!session?.access_token)return party;
+  const q=new URLSearchParams({company:party.companyName});
+  if(party.sourceUrl)q.set('source',party.sourceUrl);
+  try{
+    const r=await fetch('/agreement-discovery?'+q.toString(),{headers:{Authorization:'Bearer '+session.access_token}});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.found||!d.documentText)return party;
+    return {
+      ...party,
+      sourceUrl:d.sourceUrl||party.sourceUrl,
+      documentText:d.documentText,
+      agreementTitle:party.agreementTitle||d.title||undefined,
+      agreementVersion:party.agreementVersion||d.version||undefined
+    };
+  }catch{return party}
+}
+
+async function discoverMissingAgreements(payload){
+  const parties=[];
+  for(let i=0;i<payload.parties.length;i++){
+    const party=payload.parties[i];
+    if(party.documentText){parties.push(party);continue}
+    setAgreementStatus(`Searching for the most recent available agreement for ${party.companyName}…`);
+    parties.push(await discoverAgreement(party));
+  }
+  return {...payload,parties};
+}
+
 function setAgreementStatus(message,error=false){const el=document.getElementById('agreementStatus');if(!el)return;el.textContent=message||'';el.classList.toggle('error',!!error)}
 
-function partyTemplate(index){return `<div class="party-card" data-party-index="${index}"><div class="party-card-head"><strong>Company ${index}</strong><button type="button" class="party-remove">Remove</button></div><div class="party-grid"><input class="party-name" maxlength="200" placeholder="Company name" required><select class="party-type"><option value="affiliate">Affiliate</option><option value="direct_sales">Direct sales</option><option value="network_marketing">Network marketing</option><option value="referral">Referral</option><option value="sponsor">Sponsor</option><option value="other">Other</option></select><input class="party-title" maxlength="300" placeholder="Agreement / policy title"><input class="party-version" maxlength="120" placeholder="Version or revision date"><input class="party-date" type="date" aria-label="Effective date"><input class="party-url" type="url" maxlength="2048" placeholder="Official agreement URL"><textarea class="party-text wide" rows="5" placeholder="Paste the current agreement or the relevant Policies & Procedures text here for clause spotting."></textarea></div><p class="party-help">Official source links are saved for traceability. For this release, paste the agreement text you want analyzed. PDF upload and extraction comes next.</p></div>`}
+function partyTemplate(index){return `<div class="party-card" data-party-index="${index}"><div class="party-card-head"><strong>Company ${index}</strong><button type="button" class="party-remove">Remove</button></div><div class="party-grid"><input class="party-name" maxlength="200" placeholder="Company name" required><select class="party-type"><option value="affiliate">Affiliate</option><option value="direct_sales">Direct sales</option><option value="network_marketing">Network marketing</option><option value="referral">Referral</option><option value="sponsor">Sponsor</option><option value="other">Other</option></select><input class="party-title" maxlength="300" placeholder="Agreement / policy title"><input class="party-version" maxlength="120" placeholder="Version or revision date"><input class="party-date" type="date" aria-label="Effective date"><input class="party-url" type="url" maxlength="2048" placeholder="Official agreement URL, if you have it"><textarea class="party-text wide" rows="5" placeholder="Optional: paste agreement text here. If left blank, BrandedAlign will search for the newest public agreement it can find."></textarea></div><p class="party-help">BrandedAlign searches current public affiliate agreements, policies and procedures, distributor terms, compliance guides, and equivalent company documents first. An official URL or pasted text can still be supplied when you have a better source.</p></div>`}
 
 function addParty(){
   partyCount++;
@@ -78,11 +109,13 @@ function renderAgreementResults(data){
   const review=data.review||{};const parties=data.parties||[];const findings=data.findings||[];const activities=review.intended_activities||[];
   const byKey={};findings.forEach(f=>{byKey[f.activity_key+'|'+f.party_id]=f});
   const worst=findings.reduce((a,f)=>riskRank(f.risk_level)>riskRank(a)?f.risk_level:a,'green');
-  let html=`<div class="agreement-result-head"><div><span class="eyebrow">Agreement compatibility review</span><h3>${esc(review.brand_name||'Your brand')}</h3><p>${parties.length} companies · ${activities.length} intended activities · ${review.status==='needs_documents'?'More agreement text needed':'Clause spotting complete'}</p></div><span class="risk-chip ${worst==='cannot_determine'?'unknown':worst}">${riskLabel(worst)}</span></div>`;
+  let html=`<div class="agreement-result-head"><div><span class="eyebrow">Agreement compatibility review</span><h3>${esc(review.brand_name||'Your brand')}</h3><p>${parties.length} companies · ${activities.length} intended activities · ${review.status==='needs_documents'?'Some current agreement sources could not be found':'Clause spotting complete'}</p></div><span class="risk-chip ${worst==='cannot_determine'?'unknown':worst}">${riskLabel(worst)}</span></div>`;
   html+=`<div class="agreement-matrix-wrap"><table class="agreement-matrix"><thead><tr><th>Activity</th>${parties.map(p=>`<th>${esc(p.company_name)}</th>`).join('')}</tr></thead><tbody>${activities.map(activity=>`<tr><td class="matrix-activity">${esc(activityLabels[activity]||activity)}</td>${parties.map(p=>{const f=byKey[activity+'|'+p.id];if(!f)return'<td class="matrix-cell"><span class="risk-chip unknown">Cannot determine</span></td>';const cls=f.risk_level==='cannot_determine'?'unknown':f.risk_level;return `<td class="matrix-cell"><span class="risk-chip ${cls}">${esc(riskLabel(f.risk_level))}</span><small>${esc(f.explanation||'')}</small>${f.evidence_excerpt?`<details><summary>Clause spotted</summary><small>${esc(f.evidence_excerpt)}</small></details>`:''}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>`;
+  const sources=parties.filter(p=>p.source_url).map(p=>`<li><strong>${esc(p.company_name)}</strong>: <a href="${esc(p.source_url)}" target="_blank" rel="noopener noreferrer">${esc(p.agreement_title||'Agreement source')}</a>${p.agreement_version?` · ${esc(p.agreement_version)}`:''}</li>`);
+  if(sources.length)html+=`<div class="agreement-safer"><h4>Agreement sources reviewed</h4><ul>${sources.join('')}</ul></div>`;
   const safer=[...new Set(findings.map(f=>f.safer_structure).filter(Boolean))];
   if(safer.length)html+=`<div class="agreement-safer"><h4>Safer brand structure</h4><ul>${safer.slice(0,8).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
-  html+='<p class="agreement-history">Saved to your BrandedAlign organization. A green result means no conflict was found in the detected language reviewed. It is not legal certification.</p>';
+  html+='<p class="agreement-history">Saved to your BrandedAlign organization. BrandedAlign uses the newest credible public source it can locate, but companies can change terms without notice. A green result means no conflict was found in the language reviewed. It is not legal certification.</p>';
   out.innerHTML=html;out.classList.remove('hidden');out.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
@@ -92,7 +125,7 @@ async function loadSavedReviews(){
     const d=await api('/api/agreement-reviews');
     const reviews=d.reviews||[];
     if(!reviews.length){grid.innerHTML='<div class="saved-empty">No saved Agreement Reviews yet. Your first completed review will appear here.</div>';return}
-    grid.innerHTML=reviews.map(r=>`<button class="saved-review-card" type="button" data-review-id="${esc(r.id)}"><span class="eyebrow">${esc(r.status==='needs_documents'?'Needs documents':'Saved review')}</span><h3>${esc(r.brand_name)}</h3><p>${Array.isArray(r.intended_activities)?r.intended_activities.length:0} activity checks · ${esc(title(r.customer_source))}</p><div class="saved-review-meta"><span>${esc(fmtDate(r.created_at))}</span><span>Open →</span></div></button>`).join('');
+    grid.innerHTML=reviews.map(r=>`<button class="saved-review-card" type="button" data-review-id="${esc(r.id)}"><span class="eyebrow">${esc(r.status==='needs_documents'?'Needs source':'Saved review')}</span><h3>${esc(r.brand_name)}</h3><p>${Array.isArray(r.intended_activities)?r.intended_activities.length:0} activity checks · ${esc(title(r.customer_source))}</p><div class="saved-review-meta"><span>${esc(fmtDate(r.created_at))}</span><span>Open →</span></div></button>`).join('');
     grid.querySelectorAll('[data-review-id]').forEach(btn=>btn.addEventListener('click',async()=>{
       btn.disabled=true;
       try{const detail=await api('/api/agreement-reviews/'+encodeURIComponent(btn.dataset.reviewId));renderAgreementResults(detail)}catch(err){setAgreementStatus(err.message||'Unable to open saved review.',true)}finally{btn.disabled=false}
@@ -131,13 +164,16 @@ async function init(){
   document.getElementById('agreementForm').addEventListener('submit',async e=>{
     e.preventDefault();
     if(!activeMembership){setAgreementStatus('An active membership is required to run Agreement Check.',true);return}
-    const payload=agreementPayload();
+    let payload=agreementPayload();
     if(payload.parties.length<2||payload.parties.some(p=>!p.companyName)){setAgreementStatus('Add at least two company names.',true);return}
     if(!payload.intendedActivities.length){setAgreementStatus('Choose at least one activity you want to compare.',true);return}
-    const btn=document.getElementById('agreementSubmit');btn.disabled=true;btn.textContent='Comparing agreements…';setAgreementStatus('Saving the ecosystem and checking the agreement language…');
+    const btn=document.getElementById('agreementSubmit');btn.disabled=true;btn.textContent='Finding current agreements…';
     try{
+      payload=await discoverMissingAgreements(payload);
+      btn.textContent='Comparing agreements…';
+      setAgreementStatus('Analyzing the most current agreement language BrandedAlign could locate…');
       const d=await api('/api/agreement-reviews',{method:'POST',body:JSON.stringify(payload)});
-      setAgreementStatus(d.review?.status==='needs_documents'?'Saved. Some companies still need agreement text before BrandedAlign can evaluate every activity.':'Compatibility review complete.');
+      setAgreementStatus(d.review?.status==='needs_documents'?'Saved. BrandedAlign could not locate a usable current public agreement for every company. Add an official link or paste the agreement to complete those rows.':'Compatibility review complete using the available current agreement sources.');
       renderAgreementResults(d);await loadSavedReviews();
     }catch(err){setAgreementStatus(err.message||'Agreement Check could not be completed.',true)}
     finally{btn.disabled=false;btn.textContent='Run Agreement Compatibility Review →'}
