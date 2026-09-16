@@ -1,15 +1,17 @@
 const fs = require('fs');
 
 const path = 'src/routes/agreementReviews.ts';
-let source = fs.readFileSync(path, 'utf8');
-const before = source;
-source = source
-  .replace(/decodeSearchHref\(match\[1\]\)/g, "decodeSearchHref(match[1] ?? '')")
-  .replace(/match\[2\]\.replace/g, "(match[2] ?? '').replace");
+const lines = fs.readFileSync(path, 'utf8').split('\n');
 
-if (source === before) {
-  throw new Error('Agreement discovery TypeScript guard patterns were not found');
+if (!lines[287] || !lines[287].includes('match[1]')) {
+  throw new Error(`Expected agreement discovery guard target on line 288, got: ${lines[287] || '<missing>'}`);
+}
+if (!lines[289] || !lines[289].includes('match[2]')) {
+  throw new Error(`Expected agreement discovery guard target on line 290, got: ${lines[289] || '<missing>'}`);
 }
 
-fs.writeFileSync(path, source);
-console.log('BrandedAlign agreement discovery TypeScript guards applied');
+lines[287] = lines[287].replace('match[1]', "match[1] ?? ''");
+lines[289] = lines[289].replace('match[2]', "match[2] ?? ''");
+
+fs.writeFileSync(path, lines.join('\n'));
+console.log('BrandedAlign agreement discovery TypeScript guards applied to lines 288 and 290');
