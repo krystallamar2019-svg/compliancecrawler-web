@@ -25,6 +25,16 @@ for (const path of ['src/routes/billing.ts', 'src/app.ts']) {
   ]);
 }
 
+patch('src/app.ts', [
+  ["  app.use('/api', apiLimiter);\n  app.use('/api', requireAuth);", "  app.use('/api', apiLimiter);\n\n  const adminLimiter = rateLimit({\n    windowMs: 60_000,\n    limit: 30,\n    standardHeaders: 'draft-8',\n    legacyHeaders: false,\n    message: { error: 'ADMIN_RATE_LIMITED' },\n  });\n  app.use('/api/admin', adminLimiter);\n  app.use('/api', requireAuth);"],
+]);
+
+patch('src/middleware/admin.ts', [
+  ["import { supabaseAdmin } from '../lib/supabase.js';", "import { supabaseAdmin } from '../lib/supabase.js';\nimport { writeAuditLog } from '../lib/audit.js';"],
+  ["      if (auth.aal !== 'aal2') {\n        res.status(403).json({ error: 'ADMIN_MFA_REQUIRED' });\n        return;\n      }", "      if (auth.aal !== 'aal2') {\n        await writeAuditLog(req, { action: 'admin.access_denied', metadata: { reason: 'mfa_required' } }).catch(() => undefined);\n        res.status(403).json({ error: 'ADMIN_MFA_REQUIRED' });\n        return;\n      }"],
+  ["      if (!roles.some((role) => allowedRoles.includes(role))) {\n        res.status(403).json({ error: 'ADMIN_ACCESS_DENIED' });\n        return;\n      }", "      if (!roles.some((role) => allowedRoles.includes(role))) {\n        await writeAuditLog(req, { action: 'admin.access_denied', metadata: { reason: 'role_denied' } }).catch(() => undefined);\n        res.status(403).json({ error: 'ADMIN_ACCESS_DENIED' });\n        return;\n      }"],
+]);
+
 patch('src/routes/stripeWebhook.ts', [
   ["if (subscription.livemode) throw new Error('LIVE_EVENT_REJECTED_IN_TEST_BACKEND');", "if (!subscription.livemode) throw new Error('TEST_EVENT_REJECTED_IN_LIVE_BACKEND');"],
   ["p_livemode: false,", "p_livemode: true,"],
@@ -50,4 +60,4 @@ patch('src/routes/agreementReviews.ts', [
   ["const { organizationId } = (req as AuthenticatedRequest).auth;\n    if (!(await requireActiveMembership(organizationId))) {", "const { organizationId, organizationRole } = (req as AuthenticatedRequest).auth;\n    if (String(organizationRole || '').toLowerCase() !== 'owner' && !(await requireActiveMembership(organizationId))) {"],
 ]);
 
-console.log('BrandedAlign live billing and owner-access patch applied');
+console.log('BrandedAlign live billing, owner-access, and admin-security patch applied');
