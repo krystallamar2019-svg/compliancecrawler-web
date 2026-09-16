@@ -29,11 +29,13 @@ function sendAdmin(req,res){
     let html=fs.readFileSync(path.join(root,'client-v1.html'),'utf8');
     const adminLock=`<style id="baAdminLock">
 body.ba-admin-pending .client-header,body.ba-admin-pending .client-main,body.ba-admin-pending .client-footer{visibility:hidden}
-.ba-admin-screen{min-height:100vh;display:grid;place-items:center;padding:28px;background:#fffdf7;color:#102a3a;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-.ba-admin-card{width:min(560px,100%);padding:32px;border:1px solid rgba(16,42,58,.12);border-radius:24px;background:#fff;box-shadow:0 24px 70px rgba(16,42,58,.10)}
-.ba-admin-card h1{margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:34px}.ba-admin-card p{line-height:1.6;color:#4d626c}.ba-admin-card a{display:inline-block;margin-top:12px;color:#0b6477;font-weight:800}
+.ba-admin-screen,.ba-admin-screen *{box-sizing:border-box}
+.ba-admin-screen{min-height:100vh;display:grid;place-items:center;padding:18px;background:#fffdf7;color:#102a3a;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow-x:hidden}
+.ba-admin-card{width:100%;max-width:560px;padding:28px;border:1px solid rgba(16,42,58,.12);border-radius:24px;background:#fff;box-shadow:0 24px 70px rgba(16,42,58,.10);overflow:hidden}
+.ba-admin-card h1{margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:clamp(28px,7vw,34px);line-height:1.08}.ba-admin-card p{line-height:1.55;color:#4d626c;overflow-wrap:anywhere}.ba-admin-card a{display:inline-block;margin-top:12px;color:#0b6477;font-weight:800}
 .ba-admin-card button{border:0;border-radius:999px;padding:12px 18px;background:#102a3a;color:#fff;font-weight:800;cursor:pointer}.ba-admin-card button:disabled{opacity:.55;cursor:default}
-.ba-mfa-box{margin-top:20px;padding:18px;border:1px solid rgba(16,42,58,.12);border-radius:18px;background:#fffdf7}.ba-mfa-box img{display:block;max-width:220px;width:100%;margin:14px auto;background:#fff;padding:10px;border-radius:14px}.ba-mfa-secret{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;word-break:break-all;padding:10px;border-radius:10px;background:#f1f4f2;color:#102a3a}.ba-mfa-row{display:flex;gap:10px;margin-top:14px}.ba-mfa-row input{flex:1;min-width:0;border:1px solid rgba(16,42,58,.22);border-radius:12px;padding:12px 14px;font-size:18px;letter-spacing:.12em}.ba-mfa-status{margin-top:12px;font-size:13px;font-weight:700;color:#4d626c}.ba-mfa-status.error{color:#9a4b40}
+.ba-mfa-box{width:100%;margin-top:20px;padding:18px;border:1px solid rgba(16,42,58,.12);border-radius:18px;background:#fffdf7;overflow:hidden}.ba-mfa-qr{display:grid;place-items:center;width:100%;margin:14px auto}.ba-mfa-qr img,.ba-mfa-qr svg{display:block;width:min(240px,100%);height:auto;max-width:100%;background:#fff;padding:10px;border-radius:14px}.ba-mfa-secret{width:100%;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;word-break:break-all;padding:10px;border-radius:10px;background:#f1f4f2;color:#102a3a}.ba-mfa-row{display:flex;gap:10px;margin-top:14px;width:100%}.ba-mfa-row input{flex:1;min-width:0;width:100%;border:1px solid rgba(16,42,58,.22);border-radius:12px;padding:12px 14px;font-size:18px;letter-spacing:.12em}.ba-mfa-status{margin-top:12px;font-size:13px;font-weight:700;color:#4d626c;overflow-wrap:anywhere}.ba-mfa-status.error{color:#9a4b40}
+@media(max-width:600px){.ba-admin-screen{padding:12px}.ba-admin-card{padding:22px 16px;border-radius:20px}.ba-mfa-box{padding:14px}.ba-mfa-row{flex-direction:column}.ba-mfa-row button{width:100%}.ba-mfa-secret{font-size:11px}}
 </style>`;
     const adminGate=`<script id="baAdminGate">
 (async function(){
@@ -56,6 +58,24 @@ body.ba-admin-pending .client-header,body.ba-admin-pending .client-main,body.ba-
     if(!r.ok)throw new Error(d.error||'REQUEST_FAILED');
     return d;
   }
+  function renderQr(container,qr){
+    container.innerHTML='';
+    if(typeof qr!=='string'||!qr)return;
+    if(qr.startsWith('data:image/')){
+      const img=document.createElement('img');img.alt='BrandedAlign authenticator QR code';img.src=qr;container.appendChild(img);return;
+    }
+    try{
+      const doc=new DOMParser().parseFromString(qr,'image/svg+xml');
+      const svg=doc.documentElement;
+      if(svg&&svg.nodeName.toLowerCase()==='svg'){
+        const safeSvg=document.importNode(svg,true);
+        safeSvg.removeAttribute('style');
+        safeSvg.setAttribute('role','img');
+        safeSvg.setAttribute('aria-label','BrandedAlign authenticator QR code');
+        container.appendChild(safeSvg);
+      }
+    }catch{}
+  }
   async function showMfaSetup(){
     screen('Secure your admin account','BrandedAlign requires an authenticator code before the owner workspace can open.',
       '<div class="ba-mfa-box" id="baMfaBox"><p><strong>Use an authenticator app</strong> such as Apple Passwords, Google Authenticator, Microsoft Authenticator, Authy, or 1Password.</p><button id="baStartMfa" type="button">Set up authenticator</button><div id="baMfaStatus" class="ba-mfa-status"></div></div>');
@@ -68,13 +88,26 @@ body.ba-admin-pending .client-header,body.ba-admin-pending .client-main,body.ba-
         if(factors.error)throw factors.error;
         const verified=(factors.data?.totp||[]).find(f=>f.status==='verified');
         if(verified){await showMfaChallenge(verified.id);return}
+        for(const factor of (factors.data?.totp||[]).filter(f=>f.status!=='verified')){
+          await authClient.auth.mfa.unenroll({factorId:factor.id}).catch(()=>undefined);
+        }
         const enrolled=await authClient.auth.mfa.enroll({factorType:'totp',friendlyName:'BrandedAlign Owner'});
         if(enrolled.error)throw enrolled.error;
         const factorId=enrolled.data.id;
         const qr=enrolled.data.totp.qr_code;
         const secret=enrolled.data.totp.secret;
-        document.getElementById('baMfaBox').innerHTML='<p><strong>Scan this QR code</strong> with your authenticator app. If you are viewing this on the same phone, add the secret manually instead.</p><img alt="BrandedAlign authenticator QR code" src="'+qr+'"><div class="ba-mfa-secret" aria-label="Authenticator secret">'+secret+'</div><div class="ba-mfa-row"><input id="baMfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="6 digit code"><button id="baVerifyMfa" type="button">Verify</button></div><div id="baMfaStatus" class="ba-mfa-status">Enter the current code from your authenticator app.</div>';
-        document.getElementById('baVerifyMfa').addEventListener('click',()=>verifyEnrollment(factorId));
+        const box=document.getElementById('baMfaBox');
+        box.innerHTML='';
+        const instructions=document.createElement('p');
+        const strong=document.createElement('strong');strong.textContent='Scan this QR code';instructions.appendChild(strong);instructions.append(' with your authenticator app. If you are viewing this on the same phone, add the secret manually instead.');box.appendChild(instructions);
+        const qrBox=document.createElement('div');qrBox.className='ba-mfa-qr';box.appendChild(qrBox);renderQr(qrBox,qr);
+        const secretBox=document.createElement('div');secretBox.className='ba-mfa-secret';secretBox.setAttribute('aria-label','Authenticator secret');secretBox.textContent=secret;box.appendChild(secretBox);
+        const row=document.createElement('div');row.className='ba-mfa-row';
+        const input=document.createElement('input');input.id='baMfaCode';input.inputMode='numeric';input.autocomplete='one-time-code';input.maxLength=8;input.placeholder='6 digit code';
+        const button=document.createElement('button');button.id='baVerifyMfa';button.type='button';button.textContent='Verify';
+        row.appendChild(input);row.appendChild(button);box.appendChild(row);
+        const newStatus=document.createElement('div');newStatus.id='baMfaStatus';newStatus.className='ba-mfa-status';newStatus.textContent='Enter the current code from your authenticator app.';box.appendChild(newStatus);
+        button.addEventListener('click',()=>verifyEnrollment(factorId));
       }catch(err){status.textContent=err.message||'Could not start MFA setup.';status.className='ba-mfa-status error';start.disabled=false}
     });
   }
