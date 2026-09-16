@@ -68,4 +68,4 @@ http.createServer=function patchedCreateServer(listener){
 };
 
 console.log('BrandedAlign PWA HTTP intercept armed');
-require('./server-ledger-launch.js');
+require('./agreement-discovery-launch.js');
