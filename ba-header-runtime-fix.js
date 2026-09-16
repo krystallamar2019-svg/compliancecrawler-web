@@ -35,7 +35,7 @@ http.createServer=function baHeaderCheckedCreateServer(listener){
   return originalCreateServer((req,res)=>{
     let pathname='/';
     try{pathname=new URL(req.url,'http://localhost').pathname}catch{}
-    if(pathname==='/ba-header-check'){
+    if(pathname==='/ba_header_check'){
       const body='BA_HEADER_RUNTIME_FIX_ACTIVE';
       res.writeHead(200,{'Content-Type':'text/plain; charset=utf-8','Content-Length':Buffer.byteLength(body),'Cache-Control':'no-store'});
       return req.method==='HEAD'?res.end():res.end(body);
