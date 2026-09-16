@@ -2,6 +2,7 @@ const http=require('http');
 const fs=require('fs');
 const path=require('path');
 require('./pwa-icon-bootstrap.js');
+require('./header-brand-icon-fix.js');
 
 const root=__dirname;
 const originalCreateServer=http.createServer.bind(http);
