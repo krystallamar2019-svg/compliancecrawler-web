@@ -2,6 +2,6 @@
   "name": "compliancecrawler-web",
   "version": "1.0.0",
   "private": true,
-  "scripts": {"start": "node header-brand-icon-fix.js && node server-launch.js"},
+  "scripts": {"start": "node ba-header-runtime-fix.js"},
   "engines": {"node": ">=20"}
 }
