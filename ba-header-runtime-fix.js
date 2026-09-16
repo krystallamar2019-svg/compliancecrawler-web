@@ -1,7 +1,9 @@
 const fs=require('fs');
 const path=require('path');
+const http=require('http');
 
 const originalRead=fs.readFileSync.bind(fs);
+const originalCreateServer=http.createServer.bind(http);
 
 const baMark=`<span class="brand-mark ba-brand-mark" aria-hidden="true"><svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ba-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#173A4D"/><stop offset="1" stop-color="#071B2A"/></linearGradient><linearGradient id="ba-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF2CF"/><stop offset="1" stop-color="#E8B84C"/></linearGradient></defs><rect x="1.5" y="1.5" width="61" height="61" rx="12" fill="url(#ba-bg)" stroke="#E8B84C" stroke-width="1.5"/><text x="7" y="44" font-family="Georgia,Times New Roman,serif" font-size="38" letter-spacing="-3" fill="url(#ba-gold)">BA</text><line x1="32" y1="8" x2="32" y2="56" stroke="#24A6B8" stroke-width="1.2"/><circle cx="32" cy="8" r="1.8" fill="#8DE2E8"/><line x1="19" y1="34" x2="50" y2="34" stroke="#E8B84C" stroke-width="1"/><path d="M34 30l1.4 3.1 3.2 1.4-3.2 1.4L34 39l-1.4-3.1-3.2-1.4 3.2-1.4z" fill="#FFD77A"/></svg></span>`;
 
@@ -27,6 +29,19 @@ fs.readFileSync=function(file,options){
   const next=patchHtml(text);
   const encoding=typeof options==='string'?options:options&&options.encoding;
   return encoding?next:Buffer.from(next);
+};
+
+http.createServer=function baHeaderCheckedCreateServer(listener){
+  return originalCreateServer((req,res)=>{
+    let pathname='/';
+    try{pathname=new URL(req.url,'http://localhost').pathname}catch{}
+    if(pathname==='/ba-header-check'){
+      const body='BA_HEADER_RUNTIME_FIX_ACTIVE';
+      res.writeHead(200,{'Content-Type':'text/plain; charset=utf-8','Content-Length':Buffer.byteLength(body),'Cache-Control':'no-store'});
+      return req.method==='HEAD'?res.end():res.end(body);
+    }
+    return listener(req,res);
+  });
 };
 
 console.log('BA_HEADER_RUNTIME_FIX_ARMED');
