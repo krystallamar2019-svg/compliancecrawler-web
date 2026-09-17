@@ -1,0 +1,40 @@
+name: BrandedAlign Backend CI
+
+on:
+  push:
+    branches:
+      - brandedalign-backend-v1
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'supabase/**'
+      - '.github/workflows/brandedalign-backend-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package.json
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
