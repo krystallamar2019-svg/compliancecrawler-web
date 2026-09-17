@@ -3,8 +3,13 @@ const path=require('path');
 const originalRead=fs.readFileSync.bind(fs);
 const editorialCss=originalRead(path.join(__dirname,'mobile-editorial.css'),'utf8');
 const mobileHeaderFix=`
+/* Remove the decorative orb/crest from the upper-right header ribbon on every screen size. */
+body .site-header:before{
+  display:none!important;
+  content:none!important;
+  background:none!important;
+}
 @media(max-width:760px){
-  body .site-header:before,
   body .site-header:after{
     display:none!important;
     content:none!important;
